@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "cmake",
+      "type": "shell",
+      "command": "cmake --build .",
+      "options": {
+        "cwd": "${workspaceFolder}/build"         // 设置命令行执行的工作目录
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "dependsOn": ["cmake_build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "cmake_build",
+      "type": "shell",
+      "command": "cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    }
+  ]
+}

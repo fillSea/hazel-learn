@@ -1,0 +1,56 @@
+# 基础风格继承（可选：llvm/google/mozilla/webkit/microsoft）
+BasedOnStyle: google
+
+# 语言配置
+Language: Cpp
+
+# 缩进相关
+IndentWidth: 4                # 缩进宽度（1个tab）
+TabWidth: 4                  # Tab 对应的空格数
+UseTab: Never       # 缩进用Tab
+IndentCaseLabels: true        # switch 的 case 标签缩进（case 缩进4格）
+IndentAccessModifiers: false   # 类的访问修饰符（public/private）缩进
+AccessModifierOffset: -4 # 访问修饰符（public/private）缩进偏移量（-4 表示与类名对齐）
+
+# 换行与行长度
+ColumnLimit: 120              # 单行最大字符数（超过自动换行）
+LineEnding: LF                # 换行符统一为 LF（跨平台兼容）
+AllowAllArgumentsOnNextLine: true  # 函数参数超长时，允许全部移到下一行
+AllowAllParametersOfDeclarationOnNextLine: true  # 函数声明参数超长时换行
+AllowShortIfStatementsOnASingleLine: Never    # if 语句禁止单行
+
+# 空格与空行
+SpaceAfterCStyleCast: true    # C 风格强制类型转换后加空格（如 (int) x）
+SpaceBeforeParens: ControlStatements  # 控制语句括号前加空格
+SpaceBeforeAssignmentOperators: true  # 赋值运算符前加空格（a = b）
+SpaceInEmptyBlock: false      # 空块内不加空格（{} 而非 { }）
+SpacesInParentheses: false    # 括号内不加空格（f(x) 而非 f( x )）
+SpacesInSquareBrackets: false # 方括号内不加空格（arr[0] 而非 arr[ 0 ]）
+SpacesInAngles: false         # 模板尖括号内不加空格（vector<int> 而非 vector< int >）
+PointerAlignment: Left        # 指针/引用符号靠左（int* p 而非 int *p）
+InsertBraces: true            # 自动为单语句 if/for 添加花括号（增强可读性）
+AllowShortFunctionsOnASingleLine: Inline # 内联函数（如 lambda）允许单行、
+AlignAfterOpenBracket: Align # 对齐花括号后的内容
+
+# 大括号风格
+BreakBeforeBraces: Attach    # Attach 风格，易读性最佳
+# 示例：
+# if (cond) {
+#     doSomething();
+# }
+
+# 函数与参数
+BinPackParameters: true       # 函数参数超长时，自动分多行排列
+BinPackArguments: true        # 函数调用参数超长时，自动分多行排列
+BreakConstructorInitializers: BeforeComma  # 构造函数初始化列表换行（逗号前）
+
+# 注释
+AlignTrailingComments: true   # 尾随注释对齐
+CommentPragmas: '^ IWYU pragma:' # 忽略特定注释的格式化
+ReflowComments: true          # 自动重排注释换行
+
+# 其他
+SortIncludes: true            # 自动排序 #include 头文件
+SortUsingDeclarations: true   # 自动排序 using 声明
+MaxEmptyLinesToKeep: 1        # 最多保留1个连续空行（减少冗余空行）
+CompactNamespaces: false      # 禁用紧凑命名空间（namespace A::B { ... }）
