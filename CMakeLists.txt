@@ -63,7 +63,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 # ============ Hazel 引擎核心库 ============
 
-file(GLOB_RECURSE HAZEL_SOURCES
+file(GLOB_RECURSE HAZEL_SOURCES CONFIGURE_DEPENDS
     Hazel/src/*.cpp
     Hazel/src/*.h
 )
@@ -114,7 +114,7 @@ target_compile_definitions(Hazel
 
 # ============ Sandbox 应用 ============
 
-file(GLOB_RECURSE SANDBOX_SOURCES
+file(GLOB_RECURSE SANDBOX_SOURCES CONFIGURE_DEPENDS
     Sandbox/src/*.cpp
     Sandbox/src/*.h
 )
