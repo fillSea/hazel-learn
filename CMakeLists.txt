@@ -40,8 +40,8 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 # target_include_directories(glm INTERFACE Hazel/vendor/glm)
 
 # spdlog (header-only)
-# add_library(spdlog INTERFACE)
-# target_include_directories(spdlog INTERFACE Hazel/vendor/spdlog/include)
+add_library(spdlog INTERFACE)
+target_include_directories(spdlog INTERFACE Hazel/vendor/spdlog/include)
 
 # stb_image (后期需要，纹理加载时添加)
 # add_library(stb_image STATIC Hazel/vendor/stb_image/stb_image.cpp)
@@ -72,7 +72,7 @@ add_library(Hazel SHARED ${HAZEL_SOURCES})
 
 target_include_directories(Hazel PUBLIC
     Hazel/src
-    # Hazel/vendor/spdlog/include
+    Hazel/vendor/spdlog/include
     # Hazel/vendor/GLFW/include
     # Hazel/vendor/Glad/include
     # Hazel/vendor/imgui
@@ -82,19 +82,19 @@ target_include_directories(Hazel PUBLIC
     # Hazel/vendor/ImGuizmo            # 后期添加
 )
 
-# target_link_libraries(Hazel PUBLIC
+target_link_libraries(Hazel PUBLIC
     # glfw
     # Glad
     # imgui
     # glm
-    # spdlog
+    spdlog
     # opengl32
     # stb_image     # 后期添加
     # yaml-cpp      # 后期添加
     # entt          # 后期添加
     # ImGuizmo      # 后期添加
     # Box2D         # 后期添加
-# )
+)
 
 target_compile_definitions(Hazel
     PUBLIC
@@ -123,7 +123,7 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 
 target_include_directories(Sandbox PRIVATE
     Hazel/src
-#     # Hazel/vendor/spdlog/include
+    Hazel/vendor/spdlog/include
 #     # Hazel/vendor/glm
 )
 
