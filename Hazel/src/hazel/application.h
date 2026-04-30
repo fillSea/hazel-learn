@@ -1,7 +1,7 @@
 #pragma once
-#include "core.h"
+#include "Core.h"
 
-namespace Hazel {
+namespace hazel {
 class HAZEL_API Application {
 public:
     Application();
@@ -10,4 +10,4 @@ public:
 };
 // 应该在客户端实现
 Application* createApplication();
-}  // namespace Hazel
+}  // namespace hazel

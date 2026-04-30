@@ -1,9 +1,9 @@
-#include "application.h"
+#include "Application.h"
 
-namespace Hazel {
+namespace hazel {
 Application::Application() {}
 Application::~Application() {}
 void Application::run() {
     while (true);
 }
-}  // namespace Hazel
+}  // namespace hazel

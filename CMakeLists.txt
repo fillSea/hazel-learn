@@ -72,7 +72,7 @@ add_library(Hazel SHARED ${HAZEL_SOURCES})
 
 target_include_directories(Hazel PUBLIC
     Hazel/src
-    Hazel/vendor/spdlog/include
+    Hazel/third_party/spdlog/include
     # Hazel/vendor/GLFW/include
     # Hazel/vendor/Glad/include
     # Hazel/vendor/imgui
@@ -123,7 +123,7 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 
 target_include_directories(Sandbox PRIVATE
     Hazel/src
-    Hazel/vendor/spdlog/include
+    Hazel/third_party/spdlog/include
 #     # Hazel/vendor/glm
 )
 
