@@ -11,7 +11,7 @@ public:
 
     EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 protected:
-    KeyEvent(int key_code) : key_code_(key_code) {}
+    explicit KeyEvent(int key_code) : key_code_(key_code) {}
 
     int key_code_;  // 键盘码
 };
@@ -19,7 +19,7 @@ protected:
 // 键盘按下事件
 class HAZEL_API KeyPressedEvent : public KeyEvent {
 public:
-    KeyPressedEvent(int keycode, int repeatCount) : KeyEvent(keycode), repeat_count_(repeatCount) {}
+    KeyPressedEvent(int keycode, int repeat_count) : KeyEvent(keycode), repeat_count_(repeat_count) {}
 
     inline int getRepeatCount() const { return repeat_count_; }
 
@@ -37,7 +37,7 @@ private:
 // 键盘释放事件
 class HAZEL_API KeyReleasedEvent : public KeyEvent {
 public:
-    KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
+    explicit KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
 
     std::string toString() const override {
         std::stringstream ss;

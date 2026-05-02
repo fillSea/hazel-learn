@@ -1,30 +1,217 @@
 Checks: >
   -*,
-  clang-diagnostic-*,
-  clang-analyzer-*,
-  readability-*,
+  -altera-*,
+  -android-*,
+  -darwin-*,
+  -fuchsia-*,
+  -zircon-*,
+  -objc-*,
+  -llvm-header-guard,
+  -llvmlibc-*,
+  -abseil-*,
+  -google-readability-todo,
+  -google-readability-braces-around-statements,
+  -readability-braces-around-statements,
+  -readability-implicit-bool-conversion,
+  -readability-function-cognitive-complexity,
+  -readability-uppercase-literal-suffix,
   -readability-magic-numbers,
-  readability-identifier-naming,
-  -readability-identifier-length,
-  performance-*,
-  modernize-*,
+  -readability-isolate-declaration,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-init-variables,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg,
+  -hicpp-no-array-decay,
+  -misc-no-recursion,
   -modernize-use-trailing-return-type,
-  bugprone-*,
-  portability-*,
-  -bugprone-easily-swappable-parameters,
-  -modernize-use-auto,
+  -modernize-avoid-c-arrays,
+  -clang-diagnostic-*,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+
+  google-build-using-namespace,
+  google-explicit-constructor,
+  google-readability-casting,
+  google-readability-function-size,
+  google-runtime-int,
+  cppcoreguidelines-special-member-functions,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  hicpp-explicit-conversions,
+  hicpp-use-override,
+  hicpp-use-equals-default,
+  hicpp-use-equals-delete,
+  hicpp-use-nullptr,
+  hicpp-no-assembler,
+  misc-definitions-in-headers,
+  misc-static-assert,
+  misc-throw-by-value-catch-by-reference,
+  modernize-concat-nested-namespaces,
+  modernize-deprecated-headers,
+  modernize-loop-convert,
+  modernize-make-shared,
+  modernize-make-unique,
+  modernize-pass-by-value,
+  modernize-raw-string-literal,
+  modernize-redundant-void-arg,
+  modernize-return-braced-init-list,
+  modernize-shrink-to-fit,
+  modernize-use-auto,
+  modernize-use-bool-literals,
+  modernize-use-default-member-init,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  modernize-use-noexcept,
+  modernize-use-nodiscard,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-transparent-functors,
+  modernize-use-uncaught-exceptions,
+  performance-faster-string-find,
+  performance-for-range-copy,
+  performance-implicit-conversion-in-loop,
+  performance-inefficient-algorithm,
+  performance-inefficient-string-concatenation,
+  performance-inefficient-vector-operation,
+  performance-move-const-arg,
+  performance-move-constructor-init,
+  performance-no-automatic-move,
+  performance-noexcept-move-constructor,
+  performance-trivially-destructible,
+  performance-type-promotion-in-math-fn,
+  performance-unnecessary-copy-initialization,
+  performance-unnecessary-value-param,
+  portability-restrict-system-includes,
+  portability-simd-intrinsics,
+  readability-avoid-const-params-in-decls,
+  readability-const-return-type,
+  readability-container-data-pointer,
+  readability-container-size-empty,
+  readability-delete-null-pointer,
+  readability-deleted-default,
+  readability-else-after-return,
+  readability-identifier-naming,
+  readability-inconsistent-declaration-parameter-name,
+  readability-make-member-function-const,
+  readability-misleading-indentation,
+  readability-named-parameter,
+  readability-non-const-parameter,
+  readability-qualified-auto,
+  readability-redundant-access-specifiers,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-function-ptr-declaration,
+  readability-redundant-member-init,
+  readability-redundant-preprocessor,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  readability-redundant-string-init,
+  readability-simplify-boolean-expr,
+  readability-simplify-subscript-expr,
+  readability-static-definition-in-anonymous-namespace,
+  readability-string-compare,
+  readability-uniqueptr-delete-release,
+  readability-use-anyofallof
 
 CheckOptions:
-  - key: readability-identifier-naming.VariableCase
-    value: lowerCamelCase
-  - key: readability-identifier-naming.FunctionCase
-    value: lowerCamelCase
-  - key: readability-identifier-naming.ClassCase
-    value: UpperCamelCase
-  - key: readability-identifier-naming.ConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.NamespaceCase
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.StructCase
+    value: CamelCase
+  - key:   readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key:   readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key:   readability-identifier-naming.UnionCase
+    value: CamelCase
+
+  - key:   readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  - key:   readability-identifier-naming.TemplateTemplateParameterCase
+    value: CamelCase
+
+  - key:   readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.MemberFunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.GlobalFunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.StaticFunctionCase
+    value: camelBack
+
+  - key:   readability-identifier-naming.NamespaceCase
+    value: aNy_CasE
+
+  - key:   readability-identifier-naming.NamespaceIgnoredRegexp
+    value: '.*'
+
+  - key:   readability-identifier-naming.NamespaceCase
     value: lower_case
 
-HeaderFilterRegex: '^src/.*'
+  - key:   readability-identifier-naming.LocalVariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key:   readability-identifier-naming.VariableCase
+    value: lower_case
+
+  - key:   readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key:   readability-identifier-naming.ClassMemberSuffix
+    value: _
+
+  - key:   readability-identifier-naming.StructMemberCase
+    value: lower_case
+  - key:   readability-identifier-naming.StructMemberSuffix
+    value: ''
+
+  - key:   readability-identifier-naming.StaticMemberCase
+    value: lower_case
+  - key:   readability-identifier-naming.StaticMemberSuffix
+    value: _
+
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.ConstexprVariablePrefix
+    value: k_
+  - key:   readability-identifier-naming.ConstantMemberCase
+    value: lower_case
+  - key:   readability-identifier-naming.ConstantMemberPrefix
+    value: k_
+  - key:   readability-identifier-naming.ConstantCase
+    value: lower_case
+  - key:   readability-identifier-naming.ConstantPrefix
+    value: k_
+  - key:   readability-identifier-naming.GlobalConstantCase
+    value: lower_case
+  - key:   readability-identifier-naming.GlobalConstantPrefix
+    value: k_
+
+  - key:   readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.GlobalVariablePrefix
+    value: g_
+
+  - key:   readability-identifier-naming.StaticVariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.StaticVariablePrefix
+    value: s_
+
+  - key:   readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+
+  - key:   readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+  
+  - key:   readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: '.*'
+
+  
+  - key:   performance-unnecessary-value-param.ExcludeContainerTypes
+    value: ''
+
+  
+  - key:   modernize-use-nodiscard.NoStrict
+    value: 'true'
+
+HeaderFilterRegex: '(src/|include/).*\\.h$'
 FormatStyle: file

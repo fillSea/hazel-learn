@@ -28,7 +28,7 @@ private:
 // 鼠标滚动事件
 class HAZEL_API MouseScrolledEvent : public Event {
 public:
-    MouseScrolledEvent(float xOffset, float yOffset) : x_offset_(xOffset), y_offset_(yOffset) {}
+    MouseScrolledEvent(float x_offset, float y_offset) : x_offset_(x_offset), y_offset_(y_offset) {}
 
     inline float getXOffset() const { return x_offset_; }
     inline float getYOffset() const { return y_offset_; }
@@ -52,7 +52,7 @@ public:
 
     EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 protected:
-    MouseButtonEvent(int button) : button_(button) {}
+    explicit MouseButtonEvent(int button) : button_(button) {}
 
     int button_;  // 鼠标按钮
 };
@@ -60,7 +60,7 @@ protected:
 // 鼠标按钮按下事件
 class HAZEL_API MouseButtonPressedEvent : public MouseButtonEvent {
 public:
-    MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
+    explicit MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
 
     std::string toString() const override {
         std::stringstream ss;
@@ -74,7 +74,7 @@ public:
 // 鼠标按钮释放事件
 class HAZEL_API MouseButtonReleasedEvent : public MouseButtonEvent {
 public:
-    MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}
+    explicit MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}
 
     std::string toString() const override {
         std::stringstream ss;

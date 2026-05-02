@@ -1,13 +1,14 @@
-# 基础风格继承（可选：llvm/google/mozilla/webkit/microsoft）
-BasedOnStyle: google
+# 基础风格继承
+BasedOnStyle: Google
 
 # 语言配置
 Language: Cpp
 
 # 缩进相关
+UseTab: ForIndentation
 IndentWidth: 4                # 缩进宽度（1个tab）
 TabWidth: 4                  # Tab 对应的空格数
-UseTab: Never       # 缩进用Tab
+ContinuationIndentWidth: 4
 IndentCaseLabels: true        # switch 的 case 标签缩进（case 缩进4格）
 IndentAccessModifiers: false   # 类的访问修饰符（public/private）缩进
 AccessModifierOffset: -4 # 访问修饰符（public/private）缩进偏移量（-4 表示与类名对齐）
@@ -18,6 +19,8 @@ LineEnding: LF                # 换行符统一为 LF（跨平台兼容）
 AllowAllArgumentsOnNextLine: true  # 函数参数超长时，允许全部移到下一行
 AllowAllParametersOfDeclarationOnNextLine: true  # 函数声明参数超长时换行
 AllowShortIfStatementsOnASingleLine: Never    # if 语句禁止单行
+AllowShortLoopsOnASingleLine: false         # 循环不单行
+AllowShortCaseLabelsOnASingleLine: false    # case 标签不单行
 
 # 空格与空行
 SpaceAfterCStyleCast: true    # C 风格强制类型转换后加空格（如 (int) x）
@@ -27,17 +30,33 @@ SpaceInEmptyBlock: false      # 空块内不加空格（{} 而非 { }）
 SpacesInParentheses: false    # 括号内不加空格（f(x) 而非 f( x )）
 SpacesInSquareBrackets: false # 方括号内不加空格（arr[0] 而非 arr[ 0 ]）
 SpacesInAngles: false         # 模板尖括号内不加空格（vector<int> 而非 vector< int >）
-PointerAlignment: Left        # 指针/引用符号靠左（int* p 而非 int *p）
 InsertBraces: true            # 自动为单语句 if/for 添加花括号（增强可读性）
 AllowShortFunctionsOnASingleLine: Inline # 内联函数（如 lambda）允许单行、
 AlignAfterOpenBracket: Align # 对齐花括号后的内容
+SpaceInEmptyParentheses: false         # 空括号内无空格
+SpacesBeforeTrailingComments: 2        # 注释前 2 个空格
 
 # 大括号风格
-BreakBeforeBraces: Attach    # Attach 风格，易读性最佳
-# 示例：
-# if (cond) {
-#     doSomething();
-# }
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass:            false
+  AfterControlStatement: Never
+  AfterEnum:             false
+  AfterFunction:         false
+  AfterNamespace:        false
+  AfterStruct:           false
+  AfterUnion:            false
+  AfterExternBlock:      false
+  BeforeCatch:           false
+  BeforeElse:            false
+  BeforeLambdaBody:      false
+  SplitEmptyFunction:    false
+  SplitEmptyRecord:      false
+  SplitEmptyNamespace:   false
+
+# 指针与引用
+PointerAlignment: Left
+ReferenceAlignment: Left
 
 # 函数与参数
 BinPackParameters: true       # 函数参数超长时，自动分多行排列
@@ -54,3 +73,4 @@ SortIncludes: true            # 自动排序 #include 头文件
 SortUsingDeclarations: true   # 自动排序 using 声明
 MaxEmptyLinesToKeep: 1        # 最多保留1个连续空行（减少冗余空行）
 CompactNamespaces: false      # 禁用紧凑命名空间（namespace A::B { ... }）
+FixNamespaceComments: true   # 在命名空间结束处自动添加注释标识

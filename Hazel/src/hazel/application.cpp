@@ -5,8 +5,8 @@
 #include "hazel/Log.h"
 
 namespace hazel {
-Application::Application() {}
-Application::~Application() {}
+Application::Application() = default;
+Application::~Application() = default;
 void Application::run() {
     WindowResizeEvent e(1280, 720);
     if (e.isInCategory(EventCategoryApplication)) {

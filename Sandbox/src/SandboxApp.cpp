@@ -2,8 +2,8 @@
 
 class Sandbox : public hazel::Application {
 public:
-    Sandbox() {}
-    ~Sandbox() {}
+    Sandbox() = default;
+    ~Sandbox() = default;
 };
 
 hazel::Application* hazel::createApplication() {

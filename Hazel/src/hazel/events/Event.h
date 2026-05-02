@@ -74,7 +74,7 @@ public:
     virtual std::string toString() const { return getName(); }
 
     // 是否属于指定分类
-    inline bool isInCategory(EventCategory category) { return getCategoryFlags() & category; }
+    inline bool isInCategory(EventCategory category) const { return getCategoryFlags() & category; }
 
 protected:
     bool handled_ = false;  // 事件是否已被处理
@@ -86,7 +86,7 @@ class EventDispatcher {
     using EventFunction = std::function<bool(T&)>;
 
 public:
-    EventDispatcher(Event& event) : event_(event) {}
+    explicit EventDispatcher(Event& event) : event_(event) {}
 
     // 分发事件
     template <typename T>
@@ -94,7 +94,7 @@ public:
         // 检查事件类型是否匹配
         if (event_.getEventType() == T::getStaticType()) {
             // 将基类引用转为具体类型引用, 并调用处理函数
-            event_.handled_ = func(*(T*) &event_);
+            event_.handled_ = func(*static_cast<T*>(&event_));
             return true;
         }
         return false;

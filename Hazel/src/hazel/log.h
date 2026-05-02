@@ -8,14 +8,14 @@
 namespace hazel {
 class HAZEL_API Log {
 public:
-    static void init();
+	static void init();
 
-    inline static std::shared_ptr<spdlog::logger>& getCoreLogger() { return core_logger_; }
-    inline static std::shared_ptr<spdlog::logger>& getClientLogger() { return client_logger_; }
+	inline static std::shared_ptr<spdlog::logger>& getCoreLogger() { return core_logger_; }
+	inline static std::shared_ptr<spdlog::logger>& getClientLogger() { return client_logger_; }
 
 private:
-    static std::shared_ptr<spdlog::logger> core_logger_;
-    static std::shared_ptr<spdlog::logger> client_logger_;
+	static std::shared_ptr<spdlog::logger> core_logger_;
+	static std::shared_ptr<spdlog::logger> client_logger_;
 };
 }  // namespace hazel
 
