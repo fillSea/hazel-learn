@@ -41,7 +41,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 # spdlog (header-only)
 add_library(spdlog INTERFACE)
-target_include_directories(spdlog INTERFACE Hazel/vendor/spdlog/include)
+target_include_directories(spdlog INTERFACE Hazel/third_party/spdlog/include)
 
 # stb_image (后期需要，纹理加载时添加)
 # add_library(stb_image STATIC Hazel/vendor/stb_image/stb_image.cpp)
@@ -65,7 +65,6 @@ target_include_directories(spdlog INTERFACE Hazel/vendor/spdlog/include)
 
 file(GLOB_RECURSE HAZEL_SOURCES CONFIGURE_DEPENDS
     Hazel/src/*.cpp
-    Hazel/src/*.h
 )
 
 add_library(Hazel SHARED ${HAZEL_SOURCES})
@@ -109,17 +108,19 @@ target_compile_definitions(Hazel
 #     $<$<CONFIG:Release>:HZ_RELEASE>
 # )
 
-# 预编译头（视频后期会引入，初期可以不加）
-# target_precompile_headers(Hazel PRIVATE Hazel/src/hzpch.h)
+# ============ 预编译头 ============
+
+target_precompile_headers(Hazel PRIVATE Hazel/src/hzpch.h)
 
 # ============ Sandbox 应用 ============
 
 file(GLOB_RECURSE SANDBOX_SOURCES CONFIGURE_DEPENDS
     Sandbox/src/*.cpp
-    Sandbox/src/*.h
 )
 
 add_executable(Sandbox ${SANDBOX_SOURCES})
+
+target_precompile_headers(Sandbox PRIVATE Hazel/src/hzpch.h)
 
 target_include_directories(Sandbox PRIVATE
     Hazel/src
