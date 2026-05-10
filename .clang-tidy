@@ -28,6 +28,8 @@ Checks: >
   -modernize-avoid-c-arrays,
   -clang-diagnostic-*,
   -cppcoreguidelines-non-private-member-variables-in-classes,
+  -readability-redundant-access-specifiers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
 
   google-build-using-namespace,
   google-explicit-constructor,

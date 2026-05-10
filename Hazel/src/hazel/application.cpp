@@ -3,23 +3,21 @@
 // clang-format on
 #include "Application.h"
 
-#include "events/ApplicationEvent.h"
-#include "events/Event.h"
-#include "hazel/Log.h"
+#include <GLFW/glfw3.h>
+#include <gl/GL.h>
 
 namespace hazel {
-Application::Application() = default;
+Application::Application() {
+	window_ = std::unique_ptr<Window>(Window::create());
+}
+
 Application::~Application() = default;
+
 void Application::run() {
-	WindowResizeEvent e(1280, 720);
-	if (e.isInCategory(EventCategoryApplication)) {
-		// 原来：HZ_TRACE(e);
-		HZ_TRACE("{0}", e.toString());
+	while (running_) {
+		glClearColor(1, 0, 1, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+		window_->onUpdate();
 	}
-	if (e.isInCategory(EventCategoryInput)) {
-		HZ_TRACE("{0}", e.toString());
-	}
-	while (true)
-		;
 }
 }  // namespace hazel
