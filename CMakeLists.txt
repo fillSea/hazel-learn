@@ -123,7 +123,6 @@ file(GLOB_RECURSE SANDBOX_SOURCES CONFIGURE_DEPENDS
 
 add_executable(Sandbox ${SANDBOX_SOURCES})
 
-target_precompile_headers(Sandbox PRIVATE Hazel/src/hzpch.h)
 
 target_include_directories(Sandbox PRIVATE
     Hazel/src
