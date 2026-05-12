@@ -3,8 +3,8 @@
 #include <functional>
 #include <string>
 
-#include "Core.h"
-#include "events/Event.h"
+#include "hazel/Core.h"
+#include "hazel/events/Event.h"
 
 namespace hazel {
 // 窗口属性

@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 
-#include "../Core.h"
+#include "hazel/Core.h"
 
 namespace hazel {
 // Events in Hazel are currently blocking, meaning when an event occurs it
@@ -77,6 +77,10 @@ public:
 
 	// 是否属于指定分类
 	inline bool isInCategory(EventCategory category) const { return getCategoryFlags() & category; }
+	[[nodiscard]] bool isHandled() const { return handled_; }
+
+	// 设置事件是否已被处理
+	void setHandled(bool handled) { handled_ = handled; }
 
 protected:
 	bool handled_ = false;  // 事件是否已被处理
@@ -96,7 +100,8 @@ public:
 		// 检查事件类型是否匹配
 		if (event_.getEventType() == T::getStaticType()) {
 			// 将基类引用转为具体类型引用, 并调用处理函数
-			event_.handled_ = func(*static_cast<T*>(&event_));
+			bool success = func(*static_cast<T*>(&event_));
+			event_.setHandled(success);
 			return true;
 		}
 		return false;

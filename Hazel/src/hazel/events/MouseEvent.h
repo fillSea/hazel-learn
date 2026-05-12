@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Event.h"
+#include "hazel/events/Event.h"
 
 namespace hazel {
 // 鼠标移动事件

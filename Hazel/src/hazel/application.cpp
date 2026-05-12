@@ -15,17 +15,37 @@ Application::Application() {
 
 Application::~Application() = default;
 
+void Application::pushLayer(Layer* layer) {
+	layer_stack_.pushLayer(layer);
+}
+
+void Application::pushOverlay(Layer* overlay) {
+	layer_stack_.pushOverlay(overlay);
+}
+
 void Application::onEvent(Event& e) {
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
 
-	HZ_CORE_TRACE("{0}", e.toString());
+	// 从后往前遍历，先处理上层的事件
+	for (auto it = layer_stack_.end(); it != layer_stack_.begin();) {
+		(*--it)->onEvent(e);
+		// 如果事件被处理，就跳出循环
+		if (e.isHandled()) {
+			break;
+		}
+	}
 }
 
 void Application::run() {
 	while (running_) {
 		glClearColor(1, 0, 1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		for (Layer* layer : layer_stack_) {
+			layer->onUpdate();
+		}
+
 		window_->onUpdate();
 	}
 }
