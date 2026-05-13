@@ -1,7 +1,6 @@
 #include "Application.h"
 
-#include <GLFW/glfw3.h>
-#include <gl/GL.h>
+#include <glad/glad.h>
 
 #include "hazel/Log.h"
 

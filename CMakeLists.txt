@@ -26,10 +26,10 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(Hazel/third_party/GLFW)
 
 # Glad
-# add_library(Glad STATIC
-#     Hazel/vendor/Glad/src/glad.c
-# )
-# target_include_directories(Glad PUBLIC Hazel/vendor/Glad/include)
+add_library(Glad STATIC
+    Hazel/third_party/Glad/src/glad.c
+)
+target_include_directories(Glad PUBLIC Hazel/third_party/Glad/include)
 
 # imgui
 # file(GLOB IMGUI_SOURCES
@@ -73,7 +73,7 @@ target_include_directories(Hazel PUBLIC
     Hazel/src
     Hazel/third_party/spdlog/include
     Hazel/third_party/GLFW/include
-    # Hazel/vendor/Glad/include
+    Hazel/third_party/Glad/include
     # Hazel/vendor/imgui
     # Hazel/vendor/glm
     # Hazel/vendor/entt/include        # 后期添加
@@ -84,7 +84,7 @@ target_include_directories(Hazel PUBLIC
 target_link_libraries(Hazel PUBLIC
     spdlog
     glfw
-    # Glad
+    Glad
     # imgui
     # glm
     opengl32
@@ -99,16 +99,11 @@ target_compile_definitions(Hazel
     PUBLIC
         HZ_PLATFORM_WINDOWS
         GLFW_INCLUDE_NONE
+        HZ_ENABLE_ASSERTS
         $<$<CONFIG:Debug>:HZ_DEBUG>
         $<$<CONFIG:Release>:HZ_RELEASE>
     PRIVATE
         HZ_BUILD_DLL
-)
-
-target_compile_definitions(Hazel PUBLIC
-    GLFW_INCLUDE_NONE
-    $<$<CONFIG:Debug>:HZ_DEBUG>
-    $<$<CONFIG:Release>:HZ_RELEASE>
 )
 
 # ============ 预编译头 ============

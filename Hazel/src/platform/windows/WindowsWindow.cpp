@@ -1,5 +1,7 @@
 #include "WindowsWindow.h"
 
+#include <glad/glad.h>
+
 #include "hazel/events/ApplicationEvent.h"
 #include "hazel/events/KeyEvent.h"
 #include "hazel/events/MouseEvent.h"
@@ -45,6 +47,9 @@ void WindowsWindow::init(const WindowProps& props) {
 	                           nullptr, nullptr);
 	// 设置当前线程的 GLFW 上下文为窗口上下文
 	glfwMakeContextCurrent(window_);
+	// 加载 Glad 函数指针
+	int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+	HZ_CORE_ASSERT(status, "Failed to initialize Glad!");
 	// 设置窗口用户指针
 	glfwSetWindowUserPointer(window_, &data_);
 	setVSync(true);
