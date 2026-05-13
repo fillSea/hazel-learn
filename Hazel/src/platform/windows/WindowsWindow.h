@@ -1,8 +1,8 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+#include "hazel/Window.h"
 
-#include "../../hazel/Window.h"
+class GLFWwindow;
 
 namespace hazel {
 class WindowsWindow : public Window {
