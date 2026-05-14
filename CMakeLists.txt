@@ -32,12 +32,12 @@ add_library(Glad STATIC
 target_include_directories(Glad PUBLIC Hazel/third_party/Glad/include)
 
 # imgui
-# file(GLOB IMGUI_SOURCES
-#     Hazel/vendor/imgui/*.cpp
-#     Hazel/vendor/imgui/*.h
-# )
-# add_library(imgui STATIC ${IMGUI_SOURCES})
-# target_include_directories(imgui PUBLIC Hazel/vendor/imgui)
+file(GLOB IMGUI_SOURCES
+    Hazel/third_party/imgui/*.cpp
+    Hazel/third_party/imgui/*.h
+)
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC Hazel/third_party/imgui)
 
 # glm (header-only)
 # add_library(glm INTERFACE)
@@ -74,7 +74,7 @@ target_include_directories(Hazel PUBLIC
     Hazel/third_party/spdlog/include
     Hazel/third_party/GLFW/include
     Hazel/third_party/Glad/include
-    # Hazel/vendor/imgui
+    Hazel/third_party/imgui
     # Hazel/vendor/glm
     # Hazel/vendor/entt/include        # 后期添加
     # Hazel/vendor/yaml-cpp/include    # 后期添加
@@ -85,7 +85,7 @@ target_link_libraries(Hazel PUBLIC
     spdlog
     glfw
     Glad
-    # imgui
+    imgui
     # glm
     opengl32
     # stb_image     # 后期添加

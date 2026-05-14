@@ -2,6 +2,7 @@
 
 // for use by Hazel applications
 #include "hazel/Application.h"
+#include "hazel/ImGui/ImGuiLayer.h"
 #include "hazel/Layer.h"
 #include "hazel/Log.h"
 

@@ -10,7 +10,10 @@ public:
 
 class Sandbox : public hazel::Application {
 public:
-	Sandbox() { pushLayer(new ExampleLayer()); }
+	Sandbox() {
+		pushLayer(new ExampleLayer());
+		pushOverlay(new hazel::ImGuiLayer());
+	}
 	~Sandbox() = default;
 };
 
