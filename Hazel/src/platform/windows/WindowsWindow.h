@@ -7,8 +7,12 @@ class GLFWwindow;
 namespace hazel {
 class WindowsWindow : public Window {
 public:
-	WindowsWindow(const WindowProps& props);
-	virtual ~WindowsWindow();
+	explicit WindowsWindow(const WindowProps& props);
+	~WindowsWindow() override;
+	WindowsWindow(const WindowsWindow&) = delete;
+	WindowsWindow& operator=(const WindowsWindow&) = delete;
+	WindowsWindow(WindowsWindow&&) = delete;
+	WindowsWindow& operator=(WindowsWindow&&) = delete;
 
 	void onUpdate() override;
 

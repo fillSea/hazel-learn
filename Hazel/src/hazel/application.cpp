@@ -2,8 +2,6 @@
 
 #include <glad/glad.h>
 
-#include "hazel/Log.h"
-
 namespace hazel {
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
