@@ -657,7 +657,12 @@ Application::run()
 class HAZEL_API ImGuiLayer : public Layer {
 public:
 	ImGuiLayer();
-	~ImGuiLayer();
+	~ImGuiLayer() override = default;
+
+	ImGuiLayer(const ImGuiLayer&) = delete;
+	ImGuiLayer& operator=(const ImGuiLayer&) = delete;
+	ImGuiLayer(ImGuiLayer&&) = delete;
+	ImGuiLayer& operator=(ImGuiLayer&&) = delete;
 
 	void onAttach() override;
 	void onDetach() override;
@@ -665,11 +670,25 @@ public:
 	void onEvent(Event& event) override;
 
 private:
+	bool onMouseButtonPressedEvent(MouseButtonPressedEvent& e);
+	bool onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
+	bool onMouseMovedEvent(MouseMovedEvent& e);
+	bool onMouseScrolledEvent(MouseScrolledEvent& e);
+	bool onKeyPressedEvent(KeyPressedEvent& e);
+	bool onKeyReleasedEvent(KeyReleasedEvent& e);
+	bool onKeyTypedEvent(KeyTypedEvent& e);
+	bool onWindowResizeEvent(WindowResizeEvent& e);
+
+private:
 	// 时间戳, 用于帧同步
 	float time_ = 0.0F;
 };
 ```
-`ImGuiLayer` 继承自 `Layer`，重写了 Layer 的生命周期函数。当前实现中主要使用 `onAttach()` 和 `onUpdate()`，`onDetach()` 和 `onEvent()` 目前为空。
+`ImGuiLayer` 继承自 `Layer`，重写了 Layer 的生命周期函数，并额外定义了一组私有事件处理函数，用于把 Hazel 自己的事件系统转换为 ImGui 可识别的输入状态。
+
+拷贝构造、拷贝赋值、移动构造和移动赋值都被删除，表示 `ImGuiLayer` 不应该被复制或移动。它作为 Layer 指针交给 `LayerStack` 管理生命周期。
+
+当前 `onDetach()` 仍为空，其他主要逻辑分别在 `onAttach()`、`onUpdate()` 和 `onEvent()` 中完成。
 
 构造函数中会给 Layer 设置调试名称：
 ```cpp
@@ -698,7 +717,7 @@ void ImGuiLayer::onAttach() {
 - `ImGuiBackendFlags_HasSetMousePos`：标记后端支持设置鼠标位置。
 - `ImGui_ImplOpenGL3_Init("#version 410")`：初始化 OpenGL3 渲染后端，并指定 GLSL 版本。
 
-当前项目只接入了自定义的 OpenGL 渲染后端，没有直接使用 `imgui_impl_glfw`。因此窗口输入事件还没有在 `ImGuiLayer::onEvent()` 中转发给 ImGui。
+当前项目只接入了自定义的 OpenGL 渲染后端，没有直接使用 `imgui_impl_glfw`。因此平台输入不是由 ImGui 官方 GLFW backend 自动处理，而是在 `ImGuiLayer::onEvent()` 中手动把 Hazel 事件写入 `ImGuiIO`。
 
 ### 6.8.3. 每帧更新流程
 `onUpdate()` 每一帧由 `Application::run()` 调用，负责设置 ImGui 帧参数、创建新帧、绘制 UI 并提交渲染数据。
@@ -715,8 +734,8 @@ void ImGuiLayer::onUpdate() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui::NewFrame();
 
-	static bool show = true;
-	ImGui::ShowDemoWindow(&show);
+	static bool s_show = true;
+	ImGui::ShowDemoWindow(&s_show);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -727,11 +746,121 @@ void ImGuiLayer::onUpdate() {
 - 通过 `glfwGetTime()` 计算当前帧和上一帧的时间间隔，写入 `io.DeltaTime`。
 - 调用 `ImGui_ImplOpenGL3_NewFrame()` 确保 OpenGL 渲染后端准备好本帧资源。
 - 调用 `ImGui::NewFrame()` 开始构建新的 ImGui 帧。
-- 当前示例调用 `ImGui::ShowDemoWindow(&show)` 显示 ImGui 官方 Demo 窗口。
+- 当前示例调用 `ImGui::ShowDemoWindow(&s_show)` 显示 ImGui 官方 Demo 窗口。
 - 调用 `ImGui::Render()` 生成绘制命令。
 - 调用 `ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData())` 将 ImGui 绘制命令提交给 OpenGL。
 
-### 6.8.4. 时间同步
+### 6.8.4. 事件转发流程
+`onEvent()` 通过 `EventDispatcher` 识别不同事件类型，并分发到对应的私有处理函数：
+```cpp
+void ImGuiLayer::onEvent(Event& event) {
+	EventDispatcher dispatcher(event);
+	dispatcher.dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onMouseButtonPressedEvent));
+	dispatcher.dispatch<MouseButtonReleasedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onMouseButtonReleasedEvent));
+	dispatcher.dispatch<MouseMovedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onMouseMovedEvent));
+	dispatcher.dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onMouseScrolledEvent));
+	dispatcher.dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onKeyPressedEvent));
+	dispatcher.dispatch<KeyTypedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onKeyTypedEvent));
+	dispatcher.dispatch<KeyReleasedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onKeyReleasedEvent));
+	dispatcher.dispatch<WindowResizeEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::onWindowResizeEvent));
+}
+```
+事件来源是 `WindowsWindow` 中注册的 GLFW 回调。例如键盘、字符输入、鼠标按钮、滚轮和光标位置都会被转换成 Hazel 事件，然后通过窗口的 `event_callback` 进入 `Application::onEvent()`，最后按 LayerStack 从上到下分发给 `ImGuiLayer`。
+
+这些处理函数当前都返回 `false`，因此 `EventDispatcher` 不会把事件标记为已处理，事件仍会继续传递给下层 Layer。这表示 ImGui 可以同步输入状态，但不会阻止游戏层或业务层继续收到同一个事件。
+
+### 6.8.5. 鼠标事件处理
+鼠标按钮事件直接写入 `ImGuiIO::MouseDown`：
+```cpp
+bool ImGuiLayer::onMouseButtonPressedEvent(MouseButtonPressedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseDown[e.getMouseButton()] = true;
+
+	return false;
+}
+
+bool ImGuiLayer::onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseDown[e.getMouseButton()] = false;
+
+	return false;
+}
+```
+鼠标移动事件更新 `io.MousePos`，滚轮事件累加到 `io.MouseWheelH` 和 `io.MouseWheel`：
+```cpp
+bool ImGuiLayer::onMouseMovedEvent(MouseMovedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MousePos = ImVec2(e.getX(), e.getY());
+
+	return false;
+}
+
+bool ImGuiLayer::onMouseScrolledEvent(MouseScrolledEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseWheelH += e.getXOffset();
+	io.MouseWheel += e.getYOffset();
+
+	return false;
+}
+```
+这样 ImGui 就能知道鼠标位置、鼠标按钮状态和滚轮变化，用于窗口拖拽、按钮点击、滚动区域等 UI 交互。
+
+### 6.8.6. 键盘事件处理
+键盘按下和释放事件会先通过 `KeyUtil::gLFWKeyToImGuiKey()` 把 GLFW 按键码转换成 ImGui 的 `ImGuiKey`，再调用 `io.AddKeyEvent()`：
+```cpp
+bool ImGuiLayer::onKeyPressedEvent(KeyPressedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiKey imgui_key = KeyUtil::gLFWKeyToImGuiKey(e.getKeyCode());
+
+	if (imgui_key != ImGuiKey_None) {
+		io.AddKeyEvent(imgui_key, true);
+	}
+
+	return false;
+}
+
+bool ImGuiLayer::onKeyReleasedEvent(KeyReleasedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiKey imgui_key = KeyUtil::gLFWKeyToImGuiKey(e.getKeyCode());
+
+	if (imgui_key != ImGuiKey_None) {
+		io.AddKeyEvent(imgui_key, false);
+	}
+
+	return false;
+}
+```
+`KeyUtil` 当前覆盖了常用按键、方向键、编辑键、数字键、小键盘、修饰键、字母键和 F1-F12。无法识别的按键返回 `ImGuiKey_None`，不会提交给 ImGui。
+
+字符输入事件使用 GLFW 的 char callback 产生 `KeyTypedEvent`，用于文本输入：
+```cpp
+bool ImGuiLayer::onKeyTypedEvent(KeyTypedEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	int keycode = e.getKeyCode();
+	if (keycode > 0 && keycode < 0x10000) {
+		io.AddInputCharacter(static_cast<uint16_t>(keycode));
+	}
+
+	return false;
+}
+```
+`KeyPressedEvent` 负责按键状态，例如快捷键和导航；`KeyTypedEvent` 负责字符输入，例如在文本框中输入文字。
+
+### 6.8.7. 窗口尺寸变化处理
+窗口大小变化时，`ImGuiLayer` 会同步更新 ImGui 的显示尺寸，并调整 OpenGL viewport：
+```cpp
+bool ImGuiLayer::onWindowResizeEvent(WindowResizeEvent& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2(e.getWidth(), e.getHeight());
+	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+	glViewport(0, 0, e.getWidth(), e.getHeight());
+
+	return false;
+}
+```
+这保证窗口缩放后，ImGui 的坐标系统和 OpenGL 的渲染区域保持一致。
+
+### 6.8.8. 时间同步
 `time_` 保存上一帧时间，用于计算 `io.DeltaTime`：
 ```cpp
 float time = static_cast<float>(glfwGetTime());
@@ -742,7 +871,7 @@ time_ = time;
 
 `io.DeltaTime` 对 ImGui 很重要，动画、双击判断、输入重复等行为都依赖该值。
 
-### 6.8.5. OpenGL ImGui Renderer
+### 6.8.9. OpenGL ImGui Renderer
 项目中自定义了 `platform/OpenGL/ImGuiOpenGLRenderer.h/.cpp`，提供 ImGui OpenGL3 渲染后端接口：
 ```cpp
 IMGUI_IMPL_API bool ImGui_ImplOpenGL3_Init(const char* glsl_version = nullptr);
@@ -761,7 +890,7 @@ IMGUI_IMPL_API void ImGui_ImplOpenGL3_DestroyDeviceObjects();
 - `ImGui_ImplOpenGL3_DestroyDeviceObjects()`：销毁字体纹理、buffer 和 shader program。
 - `ImGui_ImplOpenGL3_Shutdown()`：释放后端数据，并清理 ImGui IO 中记录的 renderer backend 状态。
 
-### 6.8.6. 渲染后端初始化
+### 6.8.10. 渲染后端初始化
 `ImGui_ImplOpenGL3_Init()` 会把 OpenGL 渲染后端数据挂到 ImGui IO 上：
 ```cpp
 bool ImGui_ImplOpenGL3_Init(const char* glsl_version) {
@@ -791,7 +920,7 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version) {
 - `ImGuiBackendFlags_RendererHasVtxOffset` 表示渲染后端支持 `ImDrawCmd::VtxOffset`，可以处理较大的 mesh。
 - `glsl_version_string` 会被拼接到 shader 源码前，用于指定 GLSL 版本。
 
-### 6.8.7. OpenGL 资源创建
+### 6.8.11. OpenGL 资源创建
 当 `ImGui_ImplOpenGL3_NewFrame()` 发现 `shader_handle == 0` 时，会调用 `ImGui_ImplOpenGL3_CreateDeviceObjects()` 创建渲染资源。
 
 后端数据结构如下：
@@ -826,7 +955,7 @@ io.Fonts->SetTexID(static_cast<ImTextureID>(bd->font_texture));
 ```
 ImGui 绘制文字时，会通过 `ImDrawCmd::GetTexID()` 取出该纹理并绑定到 OpenGL。
 
-### 6.8.8. ImGui 绘制命令到 OpenGL
+### 6.8.12. ImGui 绘制命令到 OpenGL
 `ImGui_ImplOpenGL3_RenderDrawData()` 是真正执行渲染的函数。它会遍历 ImGui 生成的绘制列表和绘制命令，并转换成 OpenGL 调用。
 
 主要流程：
@@ -867,12 +996,12 @@ glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(pcmd->ElemCount),
                          static_cast<GLint>(pcmd->VtxOffset));
 ```
 
-### 6.8.9. 当前实现的限制
-当前 `ImGuiLayer` 已经完成了 ImGui 的显示和 OpenGL 渲染，但还存在一些未完善的点：
+### 6.8.13. 当前实现的限制
+当前 `ImGuiLayer` 已经完成了 ImGui 的显示、OpenGL 渲染和基础输入事件转发，但还存在一些未完善的点：
 - `onDetach()` 为空，没有调用 `ImGui_ImplOpenGL3_Shutdown()` 和 `ImGui::DestroyContext()` 清理 ImGui 资源。
-- `onEvent()` 为空，事件还没有转发给 ImGui，因此鼠标、键盘输入与 ImGui 控件交互可能还不完整。
-- 项目设置了部分 `io.BackendFlags`，但没有接入完整 platform backend，例如 GLFW backend。
-- 当前 UI 内容固定为 `ImGui::ShowDemoWindow(&show)`，后续可以把业务 UI 拆成独立函数或独立 Layer。
+- 项目没有接入完整 platform backend，例如 `imgui_impl_glfw`，因此鼠标光标形状、剪贴板、手柄、IME 等平台能力还没有完整实现。
+- 事件处理函数当前都返回 `false`，即使 ImGui 想捕获鼠标或键盘，事件仍会继续传给下层 Layer。后续可以根据 `ImGuiIO::WantCaptureMouse` 和 `ImGuiIO::WantCaptureKeyboard` 决定是否标记事件为 handled。
+- 当前 UI 内容固定为 `ImGui::ShowDemoWindow(&s_show)`，后续可以把业务 UI 拆成独立函数或独立 Layer。
 
 ## 6.9. ImGui Layer 整体流程
 ```text
@@ -890,6 +1019,15 @@ glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(pcmd->ElemCount),
 │  ImGui::StyleColorsDark()                                    │
 │  配置 ImGuiIO BackendFlags                                   │
 │  ImGui_ImplOpenGL3_Init("#version 410")                     │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    输入事件                                  │
+├─────────────────────────────────────────────────────────────┤
+│  GLFW callbacks -> Hazel Event                              │
+│  Application::onEvent()                                      │
+│  ImGuiLayer::onEvent()                                       │
+│  写入 ImGuiIO: MouseDown / MousePos / MouseWheel / KeyEvent │
 └─────────────────────────┬───────────────────────────────────┘
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
