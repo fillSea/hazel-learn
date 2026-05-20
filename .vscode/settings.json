@@ -86,5 +86,6 @@
         "*.vert": "glsl",
         "*.frag": "glsl",
         "*.glsl": "glsl"
-    }
+    },
+    "Codegeex.RepoIndex": true
 }

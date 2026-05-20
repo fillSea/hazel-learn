@@ -99,7 +99,6 @@ target_compile_definitions(Hazel
     PUBLIC
         HZ_PLATFORM_WINDOWS
         GLFW_INCLUDE_NONE
-        HZ_ENABLE_ASSERTS
         $<$<CONFIG:Debug>:HZ_DEBUG>
         $<$<CONFIG:Release>:HZ_RELEASE>
     PRIVATE
