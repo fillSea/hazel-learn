@@ -535,9 +535,8 @@ void Application::pushOverlay(Layer* overlay) {
 ```cpp
 void Application::run() {
 	while (running_) {
-		glClearColor(1, 0, 1, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
 
+		//...
 		for (Layer* layer : layer_stack_) {
 			layer->onUpdate();
 		}
