@@ -40,8 +40,8 @@ add_library(imgui STATIC ${IMGUI_SOURCES})
 target_include_directories(imgui PUBLIC Hazel/third_party/imgui)
 
 # glm (header-only)
-# add_library(glm INTERFACE)
-# target_include_directories(glm INTERFACE Hazel/vendor/glm)
+add_library(glm INTERFACE)
+target_include_directories(glm INTERFACE Hazel/third_party/glm)
 
 # stb_image (后期需要，纹理加载时添加)
 # add_library(stb_image STATIC Hazel/vendor/stb_image/stb_image.cpp)
@@ -75,7 +75,7 @@ target_include_directories(Hazel PUBLIC
     Hazel/third_party/GLFW/include
     Hazel/third_party/Glad/include
     Hazel/third_party/imgui
-    # Hazel/vendor/glm
+    Hazel/third_party/glm
     # Hazel/vendor/entt/include        # 后期添加
     # Hazel/vendor/yaml-cpp/include    # 后期添加
     # Hazel/vendor/ImGuizmo            # 后期添加
@@ -86,7 +86,7 @@ target_link_libraries(Hazel PUBLIC
     glfw
     Glad
     imgui
-    # glm
+    glm
     opengl32
     # stb_image     # 后期添加
     # yaml-cpp      # 后期添加
@@ -121,7 +121,7 @@ add_executable(Sandbox ${SANDBOX_SOURCES})
 target_include_directories(Sandbox PRIVATE
     Hazel/src
     Hazel/third_party/spdlog/include
-#     # Hazel/vendor/glm
+    Hazel/third_party/glm
 )
 
 target_link_libraries(Sandbox PRIVATE Hazel)
