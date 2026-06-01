@@ -15,6 +15,7 @@
     #define HAZEL_API
 #endif
 ```
+
 在 `CMakeLists.txt` 中定义宏：
 ```
 target_compile_definitions(Hazel
@@ -1050,3 +1051,228 @@ glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(pcmd->ElemCount),
 └─────────────────────────────────────────────────────────────┘
 ```
 
+# 7. 输入系统
+输入系统用于在事件回调之外主动查询当前输入状态。事件系统适合处理“发生了什么”，例如某个按键刚刚按下；输入系统适合在每帧更新中查询“现在是什么状态”，例如 Tab 键当前是否处于按下状态、鼠标当前位置是多少。
+
+当前实现新增了 `Input` 抽象接口、Windows 平台实现 `WindowsInput`、键盘按键码 `KeyCodes.h`、鼠标按钮码 `MouseButtonCodes.h`，并在 `Window` 抽象层暴露原生窗口句柄，供平台输入实现调用 GLFW 查询函数。
+
+## 7.1. Input 抽象接口
+`Input` 是引擎对外暴露的输入查询入口。上层代码通过静态函数调用，不需要直接关心具体平台实现。
+```cpp
+class HAZEL_API Input {
+public:
+	inline static bool isKeyPressed(int keycode) { return instance_->isKeyPressedImpl(keycode); }
+
+	inline static bool isMouseButtonPressed(int button) { return instance_->isMouseButtonPressedImpl(button); }
+	inline static std::pair<float, float> getMousePosition() { return instance_->getMousePositionImpl(); }
+	inline static float getMouseX() { return instance_->getMouseXImpl(); }
+	inline static float getMouseY() { return instance_->getMouseYImpl(); }
+
+protected:
+	virtual bool isKeyPressedImpl(int keycode) = 0;
+
+	virtual bool isMouseButtonPressedImpl(int button) = 0;
+	virtual std::pair<float, float> getMousePositionImpl() = 0;
+	virtual float getMouseXImpl() = 0;
+	virtual float getMouseYImpl() = 0;
+
+private:
+	static Input* instance_;
+};
+```
+设计特点：
+- `Input::isKeyPressed()`、`Input::isMouseButtonPressed()` 等是静态接口，客户端可以直接通过 `hazel::Input` 调用。
+- 静态接口内部转发给 `instance_`，再调用对应的虚函数实现。
+- 平台相关逻辑放在派生类中，后续如果增加 Linux、macOS 或其他窗口后端，只需要替换 `Input` 的具体实现。
+- 当前 `instance_` 是一个裸指针单例，生命周期由静态初始化创建，后续可以考虑改成更明确的所有权管理方式。
+
+## 7.2. WindowsInput 实现
+Windows 平台实现继承自 `Input`，实际使用 GLFW 查询窗口输入状态。
+```cpp
+class WindowsInput : public Input {
+protected:
+	bool isKeyPressedImpl(int keycode) override;
+	bool isMouseButtonPressedImpl(int button) override;
+	std::pair<float, float> getMousePositionImpl() override;
+	float getMouseXImpl() override;
+	float getMouseYImpl() override;
+};
+```
+在 `.cpp` 中创建平台输入实例：
+```cpp
+Input* Input::instance_ = new WindowsInput();
+```
+因此当前程序启动后，所有 `Input` 静态查询都会落到 `WindowsInput`。
+
+## 7.3. 键盘状态查询
+按键查询会先从 `Application` 单例获取当前窗口，再通过窗口暴露的原生句柄转换成 `GLFWwindow*`，最后调用 `glfwGetKey()`：
+```cpp
+bool WindowsInput::isKeyPressedImpl(int keycode) {
+	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
+	auto state = glfwGetKey(window, keycode);
+	return state == GLFW_PRESS || state == GLFW_REPEAT;
+}
+```
+关键点：
+- `GLFW_PRESS` 表示按键当前处于按下状态。
+- `GLFW_REPEAT` 表示按键长按触发重复状态。
+- 因为这是轮询查询，所以适合放在 `Layer::onUpdate()` 中每帧检查。
+- 查询依赖 `Application::getInstance()`，因此需要在应用和窗口创建完成后使用。
+
+## 7.4. 鼠标状态查询
+鼠标按钮查询和键盘类似，使用 `glfwGetMouseButton()`：
+```cpp
+bool WindowsInput::isMouseButtonPressedImpl(int button) {
+	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
+	auto state = glfwGetMouseButton(window, button);
+	return state == GLFW_PRESS;
+}
+```
+鼠标位置通过 `glfwGetCursorPos()` 获取，GLFW 返回 `double`，接口中转换为 `float`：
+```cpp
+std::pair<float, float> WindowsInput::getMousePositionImpl() {
+	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	return {static_cast<float>(xpos), static_cast<float>(ypos)};
+}
+
+float WindowsInput::getMouseXImpl() {
+	auto [x, y] = getMousePositionImpl();
+	return x;
+}
+
+float WindowsInput::getMouseYImpl() {
+	auto [x, y] = getMousePositionImpl();
+	return y;
+}
+```
+`getMouseX()` 和 `getMouseY()` 都复用 `getMousePositionImpl()`，避免重复编写 GLFW 查询逻辑。
+
+## 7.5. Window 原生句柄
+输入系统需要访问 GLFW 的窗口对象，因此 `Window` 抽象类新增了原生窗口句柄接口：
+```cpp
+virtual void* getNativeWindow() const = 0;
+```
+Windows 平台窗口返回内部保存的 `GLFWwindow*`：
+```cpp
+inline void* getNativeWindow() const override { return window_; }
+```
+这里对外返回 `void*`，是为了避免 `Window` 抽象接口直接依赖 GLFW 类型。平台实现内部知道真实类型，再在 `WindowsInput` 中转换回 `GLFWwindow*`。
+
+调用链可以理解为：
+```text
+hazel::Input::isKeyPressed(key)
+  -> Input::instance_->isKeyPressedImpl(key)
+  -> WindowsInput::isKeyPressedImpl(key)
+  -> Application::getInstance().getWindow()
+  -> Window::getNativeWindow()
+  -> static_cast<GLFWwindow*>()
+  -> glfwGetKey(window, key)
+```
+
+## 7.6. KeyCodes 和 MouseButtonCodes
+新增的 `KeyCodes.h` 和 `MouseButtonCodes.h` 定义了 Hazel 自己的输入常量，数值直接来自 GLFW。
+```cpp
+#define HZ_KEY_TAB 258
+#define HZ_KEY_A 65
+#define HZ_KEY_ESCAPE 256
+```
+```cpp
+#define HZ_MOUSE_BUTTON_1 0
+#define HZ_MOUSE_BUTTON_LEFT HZ_MOUSE_BUTTON_1
+#define HZ_MOUSE_BUTTON_RIGHT HZ_MOUSE_BUTTON_2
+#define HZ_MOUSE_BUTTON_MIDDLE HZ_MOUSE_BUTTON_3
+```
+这样客户端代码可以使用 `HZ_KEY_TAB`、`HZ_MOUSE_BUTTON_LEFT` 等 Hazel 命名的常量，而不是直接使用 `GLFW_KEY_TAB` 或 `GLFW_MOUSE_BUTTON_LEFT`。
+
+当前这些常量的数值仍然与 GLFW 强绑定。它们主要起到统一 Hazel API 命名的作用，后续如果要彻底隔离 GLFW，可以把这些宏替换为引擎自己的枚举或类型别名，并在平台层做转换。
+
+## 7.7. 对外头文件导出
+`Hazel.h` 作为客户端使用引擎的统一入口，新增了输入相关头文件：
+```cpp
+#include "hazel/Input.h"
+#include "hazel/KeyCodes.h"
+#include "hazel/MouseButtonCodes.h"
+```
+因此 Sandbox 只需要包含：
+```cpp
+#include <Hazel.h>
+```
+就可以使用 `hazel::Input`、`HZ_KEY_*` 和 `HZ_MOUSE_BUTTON_*`。
+
+## 7.8. Sandbox 使用示例
+Sandbox 中的 `ExampleLayer` 同时演示了轮询输入和事件输入：
+```cpp
+void onUpdate() override {
+	if (hazel::Input::isKeyPressed(HZ_KEY_TAB)) {
+		HZ_TRACE("Tab key is pressed (poll)!");
+	}
+}
+
+void onEvent(hazel::Event& event) override {
+	if (event.getEventType() == hazel::EventType::KeyPressed) {
+		auto& e = dynamic_cast<hazel::KeyPressedEvent&>(event);
+		if (e.getKeyCode() == HZ_KEY_TAB) {
+			HZ_TRACE("Tab key is pressed (event)!");
+		}
+		HZ_TRACE("{0}", (char) e.getKeyCode());
+	}
+	HZ_TRACE("{0}", event.toString());
+}
+```
+两种方式的区别：
+- `onUpdate()` 中的 `Input::isKeyPressed(HZ_KEY_TAB)` 是主动轮询，只要 Tab 当前处于按下或重复状态，每帧都会输出日志。
+- `onEvent()` 中的 `KeyPressedEvent` 是事件驱动，只有 GLFW 回调产生按键事件并经过 Hazel 事件系统分发到该 Layer 时才会执行。
+- 轮询适合连续状态，例如移动、拖拽、持续按键操作。
+- 事件适合离散动作，例如按下、释放、窗口关闭、窗口缩放。
+
+## 7.9. 输入系统整体流程
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    客户端代码                                │
+├─────────────────────────────────────────────────────────────┤
+│  ExampleLayer::onUpdate()                                    │
+│    hazel::Input::isKeyPressed(HZ_KEY_TAB)                    │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Input 静态接口                            │
+├─────────────────────────────────────────────────────────────┤
+│  Input::instance_                                             │
+│  转发到平台实现 isKeyPressedImpl()                            │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    WindowsInput                              │
+├─────────────────────────────────────────────────────────────┤
+│  Application::getInstance()                                  │
+│  获取当前 Window                                              │
+│  getNativeWindow() -> GLFWwindow*                            │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    GLFW 查询                                  │
+├─────────────────────────────────────────────────────────────┤
+│  glfwGetKey(window, keycode)                                 │
+│  glfwGetMouseButton(window, button)                          │
+│  glfwGetCursorPos(window, &xpos, &ypos)                      │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    返回输入状态                               │
+├─────────────────────────────────────────────────────────────┤
+│  true / false                                                │
+│  mouse position: pair<float, float>                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 7.10. 当前实现的限制
+当前输入系统已经可以支持基础键盘、鼠标按钮和鼠标位置轮询，但还有一些需要后续完善的点：
+- `Input::instance_ = new WindowsInput()` 使用裸指针并且没有释放逻辑，生命周期管理比较粗糙。
+- `Input` 当前在编译期固定为 `WindowsInput`，平台选择还没有通过工厂函数或编译条件完整抽象。
+- `KeyCodes.h` 和 `MouseButtonCodes.h` 的数值直接使用 GLFW 编码，Hazel API 名称虽然独立，但底层编码仍与 GLFW 耦合。
+- `Input.h` 使用了 `std::pair<float, float>`，但当前头文件自身没有显式包含 `<utility>`，依赖其他头文件间接提供该类型。
+- `WindowsInput` 每次查询都会通过 `Application::getInstance().getWindow().getNativeWindow()` 获取窗口，当前足够简单，但以后如果支持多窗口，需要重新设计输入上下文。
+- Sandbox 示例中使用 `dynamic_cast<hazel::KeyPressedEvent&>`，这是为了演示事件转换；实际项目中更推荐继续使用 `EventDispatcher` 做类型分发，保持事件处理风格一致。

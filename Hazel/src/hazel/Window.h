@@ -38,6 +38,9 @@ public:
 	// 是否开启垂直同步
 	virtual bool isVSync() const = 0;
 
+	// 获取窗口句柄
+	virtual void* getNativeWindow() const = 0;
+
 	// 创建窗口
 	static Window* create(const WindowProps& props = WindowProps());
 };
