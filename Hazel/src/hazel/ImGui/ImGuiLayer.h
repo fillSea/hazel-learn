@@ -19,18 +19,10 @@ public:
 
 	void onAttach() override;
 	void onDetach() override;
-	void onUpdate() override;
-	void onEvent(Event& event) override;
+	void onImGuiRender() override;
 
-private:
-	bool onMouseButtonPressedEvent(MouseButtonPressedEvent& e);
-	bool onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
-	bool onMouseMovedEvent(MouseMovedEvent& e);
-	bool onMouseScrolledEvent(MouseScrolledEvent& e);
-	bool onKeyPressedEvent(KeyPressedEvent& e);
-	bool onKeyReleasedEvent(KeyReleasedEvent& e);
-	bool onKeyTypedEvent(KeyTypedEvent& e);
-	bool onWindowResizeEvent(WindowResizeEvent& e);
+	void begin();
+	void end();
 
 private:
 	// 时间戳, 用于帧同步

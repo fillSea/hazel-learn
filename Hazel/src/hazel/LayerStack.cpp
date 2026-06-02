@@ -3,9 +3,7 @@
 #include <algorithm>
 
 namespace hazel {
-LayerStack::LayerStack() {
-	layer_insert_ = layers_.begin();
-}
+LayerStack::LayerStack() {}
 
 LayerStack::~LayerStack() {
 	for (Layer* layer : layers_) {
@@ -14,7 +12,8 @@ LayerStack::~LayerStack() {
 }
 
 void LayerStack::pushLayer(Layer* layer) {
-	layer_insert_ = layers_.emplace(layer_insert_, layer);
+	layers_.emplace(layers_.begin() + layer_insert_index_, layer);
+	layer_insert_index_++;
 }
 
 void LayerStack::pushOverlay(Layer* overlay) {
@@ -25,7 +24,7 @@ void LayerStack::popLayer(Layer* layer) {
 	auto it = std::ranges::find(layers_, layer);
 	if (it != layers_.end()) {
 		layers_.erase(it);
-		layer_insert_--;
+		layer_insert_index_--;
 	}
 }
 

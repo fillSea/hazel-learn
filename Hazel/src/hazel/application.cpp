@@ -15,6 +15,9 @@ Application::Application() {
 
 	window_ = std::unique_ptr<Window>(Window::create());
 	window_->setEventCallback(BIND_EVENT_FN(Application::onEvent));
+
+	imGui_layer_ = new ImGuiLayer();
+	pushOverlay(imGui_layer_);
 }
 
 Application::~Application() = default;
@@ -51,6 +54,12 @@ void Application::run() {
 		for (Layer* layer : layer_stack_) {
 			layer->onUpdate();
 		}
+
+		imGui_layer_->begin();
+		for (Layer* layer : layer_stack_) {
+			layer->onImGuiRender();
+		}
+		imGui_layer_->end();
 
 		window_->onUpdate();
 	}

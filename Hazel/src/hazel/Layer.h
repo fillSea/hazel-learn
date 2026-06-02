@@ -23,6 +23,8 @@ public:
 	virtual void onUpdate() {}
 	// 层事件处理时调用
 	virtual void onEvent(Event& event) {}
+	// ImGui渲染时调用
+	virtual void onImGuiRender() {}
 
 	inline const std::string& getName() const { return debug_name_; }
 

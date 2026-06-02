@@ -32,6 +32,6 @@ private:
 	// 层栈
 	std::vector<Layer*> layers_;
 	// 层插入位置
-	std::vector<Layer*>::iterator layer_insert_;
+	unsigned int layer_insert_index_{0};
 };
 }  // namespace hazel

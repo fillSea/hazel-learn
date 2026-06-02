@@ -1,4 +1,5 @@
 #include <Hazel.h>
+#include <imgui.h>
 
 class ExampleLayer : public hazel::Layer {
 public:
@@ -19,14 +20,17 @@ public:
 		}
 		HZ_TRACE("{0}", event.toString());
 	}
+
+	void onImGuiRender() override {
+		// ImGui::Begin("Test");
+		// ImGui::Text("Hello World");
+		// ImGui::End();
+	}
 };
 
 class Sandbox : public hazel::Application {
 public:
-	Sandbox() {
-		pushLayer(new ExampleLayer());
-		pushOverlay(new hazel::ImGuiLayer());
-	}
+	Sandbox() { pushLayer(new ExampleLayer()); }
 	~Sandbox() = default;
 };
 
