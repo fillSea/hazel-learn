@@ -24,12 +24,10 @@ Application::~Application() = default;
 
 void Application::pushLayer(Layer* layer) {
 	layer_stack_.pushLayer(layer);
-	layer->onAttach();
 }
 
 void Application::pushOverlay(Layer* overlay) {
 	layer_stack_.pushOverlay(overlay);
-	overlay->onAttach();
 }
 
 void Application::onEvent(Event& e) {
