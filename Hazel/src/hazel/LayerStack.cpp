@@ -3,7 +3,7 @@
 #include <algorithm>
 
 namespace hazel {
-LayerStack::LayerStack() {}
+LayerStack::LayerStack() = default;
 
 LayerStack::~LayerStack() {
 	for (Layer* layer : layers_) {
