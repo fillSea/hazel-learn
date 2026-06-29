@@ -16,6 +16,11 @@ public:
 	LayerStack();
 	~LayerStack();
 
+	LayerStack(const LayerStack&) = delete;
+	LayerStack& operator=(const LayerStack&) = delete;
+	LayerStack(LayerStack&&) = delete;
+	LayerStack& operator=(LayerStack&&) = delete;
+
 	// 添加层
 	void pushLayer(Layer* layer);
 	// 添加覆盖层
