@@ -63,8 +63,27 @@ target_include_directories(glm INTERFACE Hazel/third_party/glm)
 
 # ============ Hazel 引擎核心库 ============
 
-file(GLOB_RECURSE HAZEL_SOURCES CONFIGURE_DEPENDS
-    Hazel/src/*.cpp
+set(HAZEL_SOURCES
+    Hazel/src/hzpch.cpp
+    Hazel/src/hazel/Application.cpp
+    Hazel/src/hazel/Layer.cpp
+    Hazel/src/hazel/LayerStack.cpp
+    Hazel/src/hazel/Log.cpp
+    Hazel/src/hazel/utils/KeyUtil.cpp
+    Hazel/src/hazel/ImGui/ImGuiBuild.cpp
+    Hazel/src/hazel/ImGui/ImGuiLayer.cpp
+    Hazel/src/platform/OpenGL/OpenGLContext.cpp
+    Hazel/src/platform/Windows/WindowsInput.cpp
+    Hazel/src/platform/Windows/WindowsWindow.cpp
+    Hazel/src/hazel/renderer/Shader.cpp
+    Hazel/src/hazel/renderer/Buffer.cpp
+    Hazel/src/hazel/renderer/Renderer.cpp
+    Hazel/src/platform/OpenGL/OpenGLBuffer.cpp
+    Hazel/src/hazel/renderer/VertexArray.cpp
+    Hazel/src/platform/OpenGL/OpenGLVertexArray.cpp
+    Hazel/src/hazel/renderer/RenderCommand.cpp
+    Hazel/src/hazel/renderer/RendererAPI.cpp
+    Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
 )
 
 add_library(Hazel SHARED ${HAZEL_SOURCES})
@@ -111,8 +130,8 @@ target_precompile_headers(Hazel PRIVATE Hazel/src/hzpch.h)
 
 # ============ Sandbox 应用 ============
 
-file(GLOB_RECURSE SANDBOX_SOURCES CONFIGURE_DEPENDS
-    Sandbox/src/*.cpp
+set(SANDBOX_SOURCES
+    Sandbox/src/SandboxApp.cpp
 )
 
 add_executable(Sandbox ${SANDBOX_SOURCES})

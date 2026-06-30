@@ -5,6 +5,8 @@
 class GLFWwindow;
 
 namespace hazel {
+class GraphicsContext;
+
 class WindowsWindow : public Window {
 public:
 	explicit WindowsWindow(const WindowProps& props);
@@ -31,7 +33,8 @@ private:
 	virtual void shutdown();
 
 private:
-	GLFWwindow* window_;  // GLFW 窗口指针
+	GLFWwindow* window_;        // GLFW 窗口指针
+	GraphicsContext* context_;  // 图形上下文指针
 
 	// 窗口数据
 	struct WindowData {

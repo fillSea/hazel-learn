@@ -5,8 +5,13 @@
 #include "hazel/LayerStack.h"
 #include "hazel/Window.h"
 #include "hazel/events/ApplicationEvent.h"
+#include "hazel/renderer/Shader.h"
 
 namespace hazel {
+class VertexBuffer;
+class IndexBuffer;
+class VertexArray;
+
 class HAZEL_API Application {
 public:
 	Application();
@@ -32,11 +37,21 @@ private:
 	bool onWindowClose(WindowCloseEvent& e);
 
 private:
-	std::unique_ptr<Window> window_;
-	ImGuiLayer* imGui_layer_;
-	bool running_{true};
-	LayerStack layer_stack_;
 	static Application* instance_;
+
+	std::unique_ptr<Window> window_;
+
+	std::shared_ptr<VertexArray> vertex_array_;
+
+	std::shared_ptr<Shader> shader_;
+
+	std::shared_ptr<Shader> blue_shader_;
+	std::shared_ptr<VertexArray> square_va_;
+
+	ImGuiLayer* imGui_layer_;
+	LayerStack layer_stack_;
+
+	bool running_{true};
 };
 // 应该在客户端实现
 Application* createApplication();

@@ -6,6 +6,8 @@
 #include "hazel/events/ApplicationEvent.h"
 #include "hazel/events/KeyEvent.h"
 #include "hazel/events/MouseEvent.h"
+#include "hazel/renderer/GraphicsContext.h"
+#include "platform/OpenGL/OpenGLContext.h"
 
 namespace hazel {
 // 静态全局变量
@@ -46,11 +48,10 @@ void WindowsWindow::init(const WindowProps& props) {
 
 	window_ = glfwCreateWindow(static_cast<int>(props.width), static_cast<int>(props.height), props.title.c_str(),
 	                           nullptr, nullptr);
-	// 设置当前线程的 GLFW 上下文为窗口上下文
-	glfwMakeContextCurrent(window_);
-	// 加载 Glad 函数指针
-	int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
-	HZ_CORE_ASSERT(status, "Failed to initialize Glad!");
+
+	context_ = new OpenGLContext(window_);
+	context_->init();
+
 	// 设置窗口用户指针
 	glfwSetWindowUserPointer(window_, &data_);
 	setVSync(true);
@@ -138,7 +139,7 @@ void WindowsWindow::shutdown() {
 
 void WindowsWindow::onUpdate() {
 	glfwPollEvents();
-	glfwSwapBuffers(window_);
+	context_->swapBuffers();
 }
 
 void WindowsWindow::setVSync(bool enabled) {
