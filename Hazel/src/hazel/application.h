@@ -5,6 +5,7 @@
 #include "hazel/LayerStack.h"
 #include "hazel/Window.h"
 #include "hazel/events/ApplicationEvent.h"
+#include "hazel/renderer/OrthographicCamera.h"
 #include "hazel/renderer/Shader.h"
 
 namespace hazel {
@@ -47,6 +48,8 @@ private:
 
 	std::shared_ptr<Shader> blue_shader_;
 	std::shared_ptr<VertexArray> square_va_;
+
+	OrthographicCamera camera_;
 
 	ImGuiLayer* imGui_layer_;
 	LayerStack layer_stack_;

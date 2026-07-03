@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include <string>
 
 namespace hazel {
@@ -38,6 +39,13 @@ public:
 	 * @brief 解绑当前着色器程序
 	 */
 	void unbind() const;
+
+	/**
+	 * @brief 上传 4x4 矩阵 uniform 变量到着色器
+	 * @param name   uniform 变量名
+	 * @param matrix 要上传的 4x4 矩阵值
+	 */
+	void uploadUniformMat4(const std::string& name, const glm::mat4& matrix) const;
 
 private:
 	/// 着色器程序在 GPU 端的标识符（OpenGL shader program ID）

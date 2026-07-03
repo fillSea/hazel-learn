@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace hazel {
 
 Shader::Shader(const std::string& vertex_src, const std::string& fragment_src) {
@@ -114,6 +116,13 @@ void Shader::bind() const {
 
 void Shader::unbind() const {
 	glUseProgram(0);
+}
+
+void Shader::uploadUniformMat4(const std::string& name, const glm::mat4& matrix) const {
+	// 查询 uniform 变量在着色器中的位置
+	GLint location = glGetUniformLocation(renderer_id_, name.c_str());
+	// 将矩阵数据上传至该位置，不转置（GL_FALSE）
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 }  // namespace hazel

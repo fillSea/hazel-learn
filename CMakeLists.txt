@@ -84,6 +84,7 @@ set(HAZEL_SOURCES
     Hazel/src/hazel/renderer/RenderCommand.cpp
     Hazel/src/hazel/renderer/RendererAPI.cpp
     Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
+    Hazel/src/hazel/renderer/OrthographicCamera.cpp
 )
 
 add_library(Hazel SHARED ${HAZEL_SOURCES})

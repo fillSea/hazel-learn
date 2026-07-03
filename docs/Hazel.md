@@ -1844,6 +1844,7 @@ void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& index
 Shader(const std::string& vertex_src, const std::string& fragment_src);
 void bind() const;
 void unbind() const;
+void uploadUniformMat4(const std::string& name, const glm::mat4& matrix) const;
 ```
 
 构造流程：
@@ -1869,40 +1870,142 @@ glUseProgram(renderer_id_);
 
 从而让之后的绘制命令使用该着色器程序。
 
+当前版本还新增了矩阵 uniform 上传接口：
+
+```cpp
+void Shader::uploadUniformMat4(const std::string& name, const glm::mat4& matrix) const {
+	GLint location = glGetUniformLocation(renderer_id_, name.c_str());
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+```
+
+这一步的作用是把 CPU 侧计算出的 4x4 矩阵上传到 GPU。当前它主要用于上传相机的 `u_ViewProjection`，让顶点着色器在输出 `gl_Position` 之前先经过视图投影变换。
+
 ## 8.10. Renderer 高层接口
 
-`Renderer` 是比 `RenderCommand` 更高一层的渲染接口：
+本次渲染系统的关键新增点，是引入了一个最基础的 2D 正交相机，并把 `Renderer` 从“单纯提交 VAO”升级为“带场景矩阵状态的提交入口”。
+
+### 8.10.1. OrthographicCamera
+
+`OrthographicCamera` 负责维护正交投影矩阵、视图矩阵，以及两者相乘后的视图投影矩阵：
+
+```cpp
+class OrthographicCamera {
+public:
+	OrthographicCamera(float left, float right, float bottom, float top);
+
+	const glm::vec3& getPosition() const;
+	void setPosition(const glm::vec3& position);
+
+	float getRotation() const;
+	void setRotation(float rotation);
+
+	const glm::mat4& getProjectionMatrix() const;
+	const glm::mat4& getViewMatrix() const;
+	const glm::mat4& getViewProjectionMatrix() const;
+};
+```
+
+构造时使用 `glm::ortho()` 建立正交投影：
+
+```cpp
+OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
+	: projection_matrix_(glm::ortho(left, right, bottom, top, -1.0f, 1.0f)), view_matrix_(1.0f) {
+	view_matrix_projection_ = projection_matrix_ * view_matrix_;
+}
+```
+
+当位置或旋转变化时，会重新计算视图矩阵：
+
+```cpp
+glm::mat4 transform = glm::translate(glm::mat4(1.0f), position_) *
+	                  glm::rotate(glm::mat4(1.0f), glm::radians(rotation_), glm::vec3(0, 0, 1));
+
+view_matrix_ = glm::inverse(transform);
+view_matrix_projection_ = projection_matrix_ * view_matrix_;
+```
+
+可以把它理解为：
+
+- `projection_matrix_` 决定“可见区域”的左右上下边界。
+- `view_matrix_` 表示相机在世界中的位置和朝向。
+- `view_projection_matrix_` 是最终传给着色器、参与顶点变换的矩阵。
+
+当前实现只支持最基础的二维场景能力：平移和绕 Z 轴旋转，不涉及透视投影，也没有加入缩放或更复杂的相机控制器。
+
+### 8.10.2. Renderer
+
+`Renderer` 仍然是比 `RenderCommand` 更高一层的渲染接口，但它的 API 已经更新为：
 
 ```cpp
 class Renderer {
 public:
-	static void beginScene();
+	static void beginScene(OrthographicCamera& camera);
 	static void endScene();
-	static void submit(const std::shared_ptr<VertexArray>& vertex_array);
+	static void submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertex_array);
 };
 ```
 
-当前实现比较轻量：
+`beginScene()` 不再是空壳接口，而是会从相机中取出 `view_projection_matrix` 并缓存到场景数据中：
 
 ```cpp
-void Renderer::submit(const std::shared_ptr<VertexArray>& vertex_array) {
+struct SceneData {
+	glm::mat4 view_projection_matrix;
+};
+
+void Renderer::beginScene(OrthographicCamera& camera) {
+	s_scene_data_->view_projection_matrix = camera.getViewProjectionMatrix();
+}
+```
+
+`submit()` 的流程也变成了：
+
+```cpp
+void Renderer::submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertex_array) {
+	shader->bind();
+	shader->uploadUniformMat4("u_ViewProjection", s_scene_data_->view_projection_matrix);
+
 	vertex_array->bind();
 	RenderCommand::drawIndexed(vertex_array);
 }
 ```
 
-也就是说，当前 `Renderer` 还没有摄像机、变换矩阵、场景数据缓存等高级功能，主要先提供一个统一的提交入口。
+也就是说，当前的高层渲染流程已经具备了最小场景能力：
 
-`beginScene()` 和 `endScene()` 当前为空实现，但接口已经预留出来，后续可以在这里放入：
+- `Application` 提供当前相机。
+- `Renderer::beginScene()` 缓存该相机的视图投影矩阵。
+- `Renderer::submit()` 在每次绘制前把矩阵上传到对应 shader。
+- 底层仍然通过 `RenderCommand` 分发到 OpenGL 执行 `glDrawElements()`。
 
-- 相机矩阵上传。
-- 场景常量缓冲更新。
-- 批处理或排序逻辑。
-- 提交队列刷新。
+`endScene()` 当前依然为空实现，说明 Hazel 现在还没有接入批处理、渲染队列刷新或统一的场景收尾逻辑。
+
+### 8.10.3. 构建系统接入
+
+为了让新相机类参与编译，`CMakeLists.txt` 已经把：
+
+```cmake
+Hazel/src/hazel/renderer/OrthographicCamera.cpp
+```
+
+加入到 `HAZEL_SOURCES` 中。否则虽然头文件可以包含，但链接阶段会缺少 `OrthographicCamera` 的实现。
 
 ## 8.11. Application 中的绘制示例
 
-当前 `Application` 构造函数中直接创建了两组几何体和两套着色器，用于验证渲染链路已经跑通。
+当前 `Application` 构造函数中除了创建两组几何体和两套着色器之外，还新增了一个正交相机成员：
+
+```cpp
+OrthographicCamera camera_;
+```
+
+并在构造函数初始化列表中给它设置固定的可视范围：
+
+```cpp
+Application::Application() : camera_(-1.6f, 1.6f, -0.9f, 0.9f) {
+	// ...
+}
+```
+
+这表示当前示例场景不再单纯依赖 OpenGL 默认裁剪空间，而是先通过一个宽高比接近 `16:9` 的正交相机建立可视区域。
 
 ### 8.11.1. 彩色三角形
 
@@ -1920,6 +2023,22 @@ float vertices[3 * 7] = {
 
 - 3 个位置分量 `a_Position`
 - 4 个颜色分量 `a_Color`
+
+与前一版不同的是，当前顶点着色器新增了相机矩阵 uniform：
+
+```glsl
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec4 a_Color;
+
+uniform mat4 u_ViewProjection;
+
+void main()
+{
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+}
+```
+
+因此三角形顶点会先经过 `u_ViewProjection` 变换，再输出到裁剪空间。
 
 索引为：
 
@@ -1942,7 +2061,19 @@ float square_vertices[3 * 4] = {
 uint32_t square_indices[6] = {0, 1, 2, 2, 3, 0};
 ```
 
-这个方形的着色器没有顶点颜色输入，而是由片段着色器直接输出固定蓝色：
+这个方形的着色器没有顶点颜色输入，而是由片段着色器直接输出固定蓝色；但它的顶点着色器同样接入了 `u_ViewProjection`：
+
+```glsl
+layout(location = 0) in vec3 a_Position;
+uniform mat4 u_ViewProjection;
+
+void main()
+{
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+}
+```
+
+片段着色器仍然固定输出：
 
 ```glsl
 color = vec4(0.2, 0.3, 0.8, 1.0);
@@ -1956,13 +2087,13 @@ color = vec4(0.2, 0.3, 0.8, 1.0);
 RenderCommand::setClearColor({0.1f, 0.1f, 0.1f, 1});
 RenderCommand::clear();
 
-Renderer::beginScene();
+camera_.setPosition({0.5f, 0.5f, 0.0f});
+camera_.setRotation(45.0f);
 
-blue_shader_->bind();
-Renderer::submit(square_va_);
+Renderer::beginScene(camera_);
 
-shader_->bind();
-Renderer::submit(vertex_array_);
+Renderer::submit(blue_shader_, square_va_);
+Renderer::submit(shader_, vertex_array_);
 
 Renderer::endScene();
 ```
@@ -1972,17 +2103,20 @@ Renderer::endScene();
 ```text
 设置清屏颜色
   -> 清空颜色/深度缓冲
-  -> 绑定蓝色方形着色器
-  -> 绘制方形
-  -> 绑定彩色三角形着色器
-  -> 绘制三角形
+  -> 设置相机位置
+  -> 设置相机旋转
+  -> beginScene(camera)
+  -> 上传相机的 view_projection 矩阵
+  -> 绘制蓝色方形
+  -> 上传相机的 view_projection 矩阵
+  -> 绘制彩色三角形
 ```
 
 因此当前运行结果应该是：
 
 - 背景为深灰色。
-- 中间先绘制一块蓝色方形。
-- 再在上层绘制一个带顶点颜色的三角形。
+- 蓝色方形和三角形都会经过同一个正交相机的平移和旋转变换。
+- 由于相机位置被设置为 `{0.5f, 0.5f, 0.0f}`，并绕 Z 轴旋转 `45` 度，最终画面不再是“原始 NDC 坐标直接输出”的效果，而是一个经过视图投影变换后的场景结果。
 
 ## 8.12. 渲染整体调用链
 
@@ -1992,8 +2126,11 @@ Renderer::endScene();
 Application::run()
   -> RenderCommand::setClearColor()
   -> RenderCommand::clear()
+  -> camera_.setPosition() / setRotation()
+  -> Renderer::beginScene(camera)
+  -> Renderer::submit(shader, vertex_array)
   -> Shader::bind()
-  -> Renderer::submit(vertex_array)
+  -> Shader::uploadUniformMat4("u_ViewProjection", matrix)
   -> RenderCommand::drawIndexed(vertex_array)
   -> OpenGLRendererAPI::drawIndexed(vertex_array)
   -> glDrawElements(...)
@@ -2009,13 +2146,18 @@ Application::run()
   -> glad 初始化成功
 
 Application 构造
+  -> 创建 OrthographicCamera
   -> 创建 VertexArray / VertexBuffer / IndexBuffer
   -> 设置 BufferLayout
   -> 编译 Shader
+  -> Shader 顶点阶段声明 u_ViewProjection
 
 主循环每帧执行
   -> RenderCommand 清屏
+  -> 更新相机位置和旋转
+  -> Renderer::beginScene(camera)
   -> Renderer 提交绘制
+  -> Shader 上传视图投影矩阵 uniform
   -> OpenGLRendererAPI 调用 glDrawElements
   -> ImGui Layer 更新
   -> WindowsWindow::onUpdate()
@@ -2027,12 +2169,14 @@ Application 构造
 这一版渲染系统已经完成了基础抽象和三角形/方形绘制验证，但仍有一些明显的后续工作：
 
 - `Application` 当前直接在构造函数中硬编码顶点数据和 GLSL 字符串，更适合作为学习示例，不适合作为长期架构。
-- `Renderer::beginScene()` 和 `Renderer::endScene()` 还是空实现，说明真正的场景数据管理还没有接入。
+- `Application::run()` 每一帧都把相机位置固定设置为 `{0.5f, 0.5f, 0.0f}`、旋转固定设置为 `45.0f`，目前只是示例写法，还没有独立的相机控制器或场景状态管理。
+- `Renderer::endScene()` 仍然为空，说明真正的批处理、命令缓冲整理或场景提交收尾逻辑还没有接入。
 - `RenderCommand::s_renderer_api_` 使用裸指针静态分配，生命周期管理较粗糙。
 - `WindowsWindow` 中的 `context_` 也是裸指针，目前没有看到析构释放，存在资源管理改进空间。
 - `OpenGLVertexArray::addVertexBuffer()` 当前统一使用 `glVertexAttribPointer()`，对整型属性、矩阵属性等更完整的支持后续还需要细化。
-- `Shader` 目前只支持直接传入源码字符串，还不支持从文件加载、uniform 设置、shader 名称管理等功能。
-- 当前没有把变换矩阵、相机、正交投影、纹理等更完整的渲染要素接入，只是先打通了最小可绘制链路。
+- `Shader::uploadUniformMat4()` 当前每次提交都会调用 `glGetUniformLocation()` 查询 uniform 位置，后续可以加入 uniform location 缓存，减少重复查找开销。
+- 当前已经接入了相机和正交投影，但还没有为每个物体引入独立的 model 变换矩阵，因此所有几何体共享同一个场景视图投影变换。
+- 渲染系统还没有加入纹理、材质、批处理和更完整的场景组织能力。
 
 ## 8.14. 小结
 
@@ -2041,7 +2185,8 @@ Application 构造
 - `GraphicsContext` 负责图形上下文生命周期。
 - `RendererAPI` / `RenderCommand` 负责平台无关的渲染命令分发。
 - `Buffer` / `VertexArray` 负责组织 GPU 顶点与索引数据。
-- `Shader` 负责 GPU 着色器程序。
-- `Application` 主循环通过这些抽象成功绘制出基础几何体。
+- `Shader` 负责 GPU 着色器程序，以及视图投影矩阵等 uniform 上传。
+- `OrthographicCamera` 负责提供场景级的视图投影矩阵。
+- `Application` 主循环通过这些抽象成功绘制出带相机变换的基础几何体。
 
-这意味着引擎已经从“只有窗口和 ImGui”进入到“具备最基础自定义几何绘制能力”的阶段，后续可以继续在此基础上加入相机、变换、纹理、批处理和更完整的渲染场景系统。
+这意味着引擎已经从“只有窗口和 ImGui”进入到“具备最基础场景相机与自定义几何绘制能力”的阶段，后续可以继续在此基础上加入物体变换、纹理、批处理和更完整的渲染场景系统。
