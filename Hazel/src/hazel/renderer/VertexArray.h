@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "hazel/Core.h"
 #include "hazel/renderer/Buffer.h"
 
 namespace hazel {
@@ -13,7 +14,7 @@ namespace hazel {
  * 形成完整的绘制单元。具体实现由各图形 API 子类提供（如 OpenGLVertexArray）。
  * 不可拷贝、不可移动。
  */
-class VertexArray {
+class HAZEL_API VertexArray {
 public:
 	VertexArray() = default;
 	virtual ~VertexArray() = default;

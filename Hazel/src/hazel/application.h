@@ -5,8 +5,6 @@
 #include "hazel/LayerStack.h"
 #include "hazel/Window.h"
 #include "hazel/events/ApplicationEvent.h"
-#include "hazel/renderer/OrthographicCamera.h"
-#include "hazel/renderer/Shader.h"
 
 namespace hazel {
 class VertexBuffer;
@@ -42,19 +40,12 @@ private:
 
 	std::unique_ptr<Window> window_;
 
-	std::shared_ptr<VertexArray> vertex_array_;
-
-	std::shared_ptr<Shader> shader_;
-
-	std::shared_ptr<Shader> blue_shader_;
-	std::shared_ptr<VertexArray> square_va_;
-
-	OrthographicCamera camera_;
-
 	ImGuiLayer* imGui_layer_;
 	LayerStack layer_stack_;
 
 	bool running_{true};
+
+	float last_frame_time_{0.0f};  ///< 上一帧的时间戳
 };
 // 应该在客户端实现
 Application* createApplication();

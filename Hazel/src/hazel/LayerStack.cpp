@@ -13,8 +13,8 @@ LayerStack::~LayerStack() {
 
 void LayerStack::pushLayer(Layer* layer) {
 	layers_.emplace(layers_.begin() + layer_insert_index_, layer);
-	layer->onAttach();
 	layer_insert_index_++;
+	layer->onAttach();
 }
 
 void LayerStack::pushOverlay(Layer* overlay) {
@@ -25,17 +25,17 @@ void LayerStack::pushOverlay(Layer* overlay) {
 void LayerStack::popLayer(Layer* layer) {
 	auto it = std::ranges::find(layers_, layer);
 	if (it != layers_.end()) {
+		layer->onDetach();
 		layers_.erase(it);
 		layer_insert_index_--;
-		layer->onDetach();
 	}
 }
 
 void LayerStack::popOverlay(Layer* overlay) {
 	auto it = std::ranges::find(layers_, overlay);
 	if (it != layers_.end()) {
-		layers_.erase(it);
 		overlay->onDetach();
+		layers_.erase(it);
 	}
 }
 }  // namespace hazel

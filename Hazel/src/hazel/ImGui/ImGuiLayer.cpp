@@ -6,7 +6,6 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "hazel/Application.h"
-#include "hazel/utils/KeyUtil.h"
 #include "imgui.h"
 
 namespace hazel {
@@ -76,8 +75,8 @@ void ImGuiLayer::end() {
 }
 
 void ImGuiLayer::onImGuiRender() {
-	static bool show = true;
-	ImGui::ShowDemoWindow(&show);
+	static bool s_show = true;
+	ImGui::ShowDemoWindow(&s_show);
 }
 
 }  // namespace hazel

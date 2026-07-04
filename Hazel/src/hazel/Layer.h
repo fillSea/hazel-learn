@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hazel/Core.h"
+#include "hazel/core/Timestep.h"
 #include "hazel/events/Event.h"
 
 namespace hazel {
@@ -14,13 +15,18 @@ public:
 	explicit Layer(const std::string& debug_name = "Layer");
 	virtual ~Layer();
 
+	Layer(const Layer&) = delete;
+	Layer& operator=(const Layer&) = delete;
+	Layer(Layer&&) = delete;
+	Layer& operator=(Layer&&) = delete;
+
 	// 事件回调
 	// 层被添加到应用中时调用
 	virtual void onAttach() {}
 	// 层被从应用中移除时调用
 	virtual void onDetach() {}
 	// 层更新时调用
-	virtual void onUpdate() {}
+	virtual void onUpdate(Timestep ts) {}
 	// 层事件处理时调用
 	virtual void onEvent(Event& event) {}
 	// ImGui渲染时调用

@@ -2,6 +2,7 @@
 #include "OrthographicCamera.h"
 #include "RendererAPI.h"
 #include "Shader.h"
+#include "hazel/Core.h"
 
 namespace hazel {
 
@@ -11,7 +12,7 @@ namespace hazel {
  * 提供场景级别的渲染生命周期管理（begin/end）与绘制提交接口，
  * 内部通过 RenderCommand 将指令分发到当前平台的 RendererAPI 实现。
  */
-class Renderer {
+class HAZEL_API Renderer {
 public:
 	/**
 	 * @brief 开始场景渲染

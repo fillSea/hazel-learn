@@ -8,6 +8,16 @@
 #include "hazel/Layer.h"
 #include "hazel/Log.h"
 #include "hazel/MouseButtonCodes.h"
+#include "hazel/core/Timestep.h"
+
+// ---Renderer------------------------
+#include "hazel/renderer/Buffer.h"
+#include "hazel/renderer/OrthographicCamera.h"
+#include "hazel/renderer/RenderCommand.h"
+#include "hazel/renderer/Renderer.h"
+#include "hazel/renderer/Shader.h"
+#include "hazel/renderer/VertexArray.h"
+// -----------------------------------
 
 //---Entry Point---------------------
 #include "hazel/EntryPoint.h"

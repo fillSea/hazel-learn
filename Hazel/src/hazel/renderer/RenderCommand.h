@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RendererAPI.h"
+#include "hazel/Core.h"
 
 namespace hazel {
 
@@ -10,7 +11,7 @@ namespace hazel {
  * 提供与平台无关的渲染命令入口，所有调用均委托给当前平台的 RendererAPI 实现。
  * 遵循 Command 模式，上层只需通过本类发起渲染指令，无需关心底层图形 API 差异。
  */
-class RenderCommand {
+class HAZEL_API RenderCommand {
 public:
 	/**
 	 * @brief 设置清屏颜色

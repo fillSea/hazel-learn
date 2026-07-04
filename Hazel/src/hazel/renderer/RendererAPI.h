@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "VertexArray.h"
+#include "hazel/Core.h"
 
 namespace hazel {
 
@@ -12,7 +13,7 @@ namespace hazel {
  * 定义与平台无关的渲染操作纯虚接口，具体实现由各图形 API 子类提供
  * （如 OpenGLRendererAPI）。RenderCommand 通过此接口完成静态分发。
  */
-class RendererAPI {
+class HAZEL_API RendererAPI {
 public:
 	/**
 	 * @brief 支持的图形 API 枚举

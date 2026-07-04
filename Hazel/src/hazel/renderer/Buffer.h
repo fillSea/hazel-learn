@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "hazel/Core.h"
+
 namespace hazel {
 
 enum class ShaderDataType { None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool };
@@ -99,7 +101,7 @@ struct BufferElement {
  * 描述顶点缓冲中各元素的排列方式，包括每个元素的偏移量与整体步长（stride），
  * 用于在渲染时正确解析和访问顶点属性数据。
  */
-class BufferLayout {
+class HAZEL_API BufferLayout {
 public:
 	BufferLayout() = default;
 
@@ -158,7 +160,7 @@ private:
  * 具体实现由各图形 API 子类提供（如 OpenGLVertexBuffer）。
  * 不可拷贝、不可移动。
  */
-class VertexBuffer {
+class HAZEL_API VertexBuffer {
 public:
 	VertexBuffer() = default;
 	virtual ~VertexBuffer() = default;
@@ -206,7 +208,7 @@ public:
  * 具体实现由各图形 API 子类提供（如 OpenGLIndexBuffer）。
  * 不可拷贝、不可移动。
  */
-class IndexBuffer {
+class HAZEL_API IndexBuffer {
 public:
 	IndexBuffer() = default;
 	virtual ~IndexBuffer() = default;

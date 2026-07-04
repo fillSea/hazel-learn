@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "hazel/Core.h"
+
 namespace hazel {
 
 /**
@@ -10,7 +12,7 @@ namespace hazel {
  * 内部维护投影矩阵、视图矩阵及其组合矩阵，
  * 当位置或旋转发生变化时自动重新计算视图矩阵。
  */
-class OrthographicCamera {
+class HAZEL_API OrthographicCamera {
 public:
 	/**
 	 * @brief 构造正交相机

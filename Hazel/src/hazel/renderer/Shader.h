@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "hazel/Core.h"
+
 namespace hazel {
 
 /**
@@ -11,7 +13,7 @@ namespace hazel {
  * 封装顶点着色器与片段着色器的编译、链接及使用。
  * 不可拷贝、不可移动。
  */
-class Shader {
+class HAZEL_API Shader {
 public:
 	/**
 	 * @brief 构造着色器程序

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "hazel/Core.h"
+
 namespace hazel {
 
 /**
  * @brief 图形上下文
  *
  */
-class GraphicsContext {
+class HAZEL_API GraphicsContext {
 public:
 	// 初始化上下文
 	virtual void init() = 0;
