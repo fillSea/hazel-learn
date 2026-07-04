@@ -110,15 +110,15 @@ public:
 
 	void onUpdate(hazel::Timestep ts) override {
 		if (hazel::Input::isKeyPressed(HZ_KEY_LEFT)) {
-			camera_position_.x -= camera_move_speed_ * ts;
-		} else if (hazel::Input::isKeyPressed(HZ_KEY_RIGHT)) {
 			camera_position_.x += camera_move_speed_ * ts;
+		} else if (hazel::Input::isKeyPressed(HZ_KEY_RIGHT)) {
+			camera_position_.x -= camera_move_speed_ * ts;
 		}
 
 		if (hazel::Input::isKeyPressed(HZ_KEY_UP)) {
-			camera_position_.y += camera_move_speed_ * ts;
-		} else if (hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
 			camera_position_.y -= camera_move_speed_ * ts;
+		} else if (hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
+			camera_position_.y += camera_move_speed_ * ts;
 		}
 
 		if (hazel::Input::isKeyPressed(HZ_KEY_A)) {
@@ -154,7 +154,7 @@ private:
 	std::shared_ptr<hazel::VertexArray> square_va_;
 
 	hazel::OrthographicCamera camera_;
-	glm::vec3 camera_position_;
+	glm::vec3 camera_position_{0.0f, 0.0f, 0.0f};
 	float camera_move_speed_{5.0f};
 
 	float camera_rotation_{0.0f};
