@@ -32,7 +32,8 @@ public:
 	 * @param shader      着色器
 	 * @param vertex_array 顶点数组
 	 */
-	static void submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertex_array);
+	static void submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertex_array,
+	                   const glm::mat4& transform = glm::mat4(1.0F));
 
 	/**
 	 * @brief 获取当前使用的图形 API 类型
