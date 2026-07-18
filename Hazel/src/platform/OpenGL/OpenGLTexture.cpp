@@ -13,6 +13,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : path_(path) {
 	stbi_uc* data = stbi_load(path_.c_str(), &width, &height, &channels, 0);
 	if (!data) {
 		HZ_CORE_ERROR("Texture load failed: {0}. stb_image: {1}", path_, stbi_failure_reason());
+		return;
 	}
 	width_ = width;
 	height_ = height;

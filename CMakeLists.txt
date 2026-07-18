@@ -90,7 +90,7 @@ set(HAZEL_SOURCES
     Hazel/src/platform/OpenGL/OpenGLTexture.cpp
 )
 
-add_library(Hazel SHARED ${HAZEL_SOURCES})
+add_library(Hazel STATIC ${HAZEL_SOURCES})
 
 target_include_directories(Hazel PUBLIC
     Hazel/src
@@ -125,7 +125,6 @@ target_compile_definitions(Hazel
         $<$<CONFIG:Debug>:HZ_DEBUG>
         $<$<CONFIG:Release>:HZ_RELEASE>
     PRIVATE
-        HZ_BUILD_DLL
 )
 
 # ============ 预编译头 ============
