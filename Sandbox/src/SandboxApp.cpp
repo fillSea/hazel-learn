@@ -2,6 +2,9 @@
 #include <imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "platform/OpenGL/OpenGLShader.h"
 
 class ExampleLayer : public hazel::Layer {
 public:
@@ -64,7 +67,7 @@ public:
 			}
 		)";
 
-		shader_ = std::make_shared<hazel::Shader>(vertex_src, fragment_src);
+		shader_.reset(hazel::Shader::create(vertex_src, fragment_src));
 
 		square_va_.reset(hazel::VertexArray::create());
 		float square_vertices[3 * 4] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f, -0.5f, 0.5f, 0.0f};
@@ -78,7 +81,7 @@ public:
 		square_ib.reset(hazel::IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t)));
 		square_va_->setIndexBuffer(square_ib);
 
-		std::string blue_shader_vertex_src = R"(
+		std::string flat_color_shader_vertex_src = R"(
 			#version 330 core
 			
 			layout(location = 0) in vec3 a_Position;
@@ -91,24 +94,25 @@ public:
 			void main()
 			{
 				v_Position = a_Position;
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);	
 			}
 		)";
 
-		std::string blue_shader_fragment_src = R"(
+		std::string flat_color_shader_fragment_src = R"(
 			#version 330 core
 			
 			layout(location = 0) out vec4 color;
 
 			in vec3 v_Position;
+			
+			uniform vec3 u_Color;
 
 			void main()
 			{
-				color = vec4(0.2, 0.3, 0.8, 1.0);
+				color = vec4(u_Color, 1.0);
 			}
 		)";
-
-		blue_shader_ = std::make_shared<hazel::Shader>(blue_shader_vertex_src, blue_shader_fragment_src);
+		flat_color_shader_.reset(hazel::Shader::create(flat_color_shader_vertex_src, flat_color_shader_fragment_src));
 	}
 
 	void onUpdate(hazel::Timestep ts) override {
@@ -142,11 +146,15 @@ public:
 		hazel::Renderer::submit(shader_, vertex_array_);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+
+		std::dynamic_pointer_cast<hazel::OpenGLShader>(flat_color_shader_)->bind();
+		std::dynamic_pointer_cast<hazel::OpenGLShader>(flat_color_shader_)
+		    ->uploadUniformFloat3("u_Color", square_color_);
 		for (int y = 0; y < 20; y++) {
 			for (int x = 0; x < 20; x++) {
 				glm::vec3 pos(x * 0.11f, y * 0.11f, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-				hazel::Renderer::submit(blue_shader_, square_va_, transform);
+				hazel::Renderer::submit(flat_color_shader_, square_va_, transform);
 			}
 		}
 
@@ -155,13 +163,17 @@ public:
 
 	void onEvent(hazel::Event& event) override {}
 
-	void onImGuiRender() override {}
+	void onImGuiRender() override {
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Square Color", glm::value_ptr(square_color_));
+		ImGui::End();
+	}
 
 private:
 	std::shared_ptr<hazel::Shader> shader_;
 	std::shared_ptr<hazel::VertexArray> vertex_array_;
 
-	std::shared_ptr<hazel::Shader> blue_shader_;
+	std::shared_ptr<hazel::Shader> flat_color_shader_;
 	std::shared_ptr<hazel::VertexArray> square_va_;
 
 	hazel::OrthographicCamera camera_;
@@ -170,6 +182,8 @@ private:
 
 	float camera_rotation_{0.0f};
 	float camera_rotation_speed_{180.0f};
+
+	glm::vec3 square_color_{0.2f, 0.3f, 0.8f};
 };
 
 class Sandbox : public hazel::Application {
