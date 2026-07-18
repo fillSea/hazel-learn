@@ -43,9 +43,9 @@ target_include_directories(imgui PUBLIC Hazel/third_party/imgui)
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE Hazel/third_party/glm)
 
-# stb_image (后期需要，纹理加载时添加)
-# add_library(stb_image STATIC Hazel/vendor/stb_image/stb_image.cpp)
-# target_include_directories(stb_image PUBLIC Hazel/vendor/stb_image)
+# stb_image
+add_library(stb_image STATIC Hazel/third_party/stb_image/stb_image.cpp)
+target_include_directories(stb_image PUBLIC Hazel/third_party/stb_image)
 
 # yaml-cpp (后期需要，场景序列化时添加)
 # add_subdirectory(Hazel/vendor/yaml-cpp)
@@ -86,6 +86,8 @@ set(HAZEL_SOURCES
     Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
     Hazel/src/hazel/renderer/OrthographicCamera.cpp
     Hazel/src/platform/OpenGL/OpenGLShader.cpp
+    Hazel/src/hazel/renderer/Texture.cpp
+    Hazel/src/platform/OpenGL/OpenGLTexture.cpp
 )
 
 add_library(Hazel SHARED ${HAZEL_SOURCES})
@@ -109,7 +111,7 @@ target_link_libraries(Hazel PUBLIC
     imgui
     glm
     opengl32
-    # stb_image     # 后期添加
+    stb_image
     # yaml-cpp      # 后期添加
     # entt          # 后期添加
     # ImGuizmo      # 后期添加
@@ -146,6 +148,18 @@ target_include_directories(Sandbox PRIVATE
 )
 
 target_link_libraries(Sandbox PRIVATE Hazel)
+
+# Texture paths are relative to the executable's asset directory.  Configure
+# Visual Studio's debugger to match the directory used by the built executable.
+set_target_properties(Sandbox PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Sandbox>"
+)
+
+add_custom_command(TARGET Sandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/Sandbox/assets
+        ${CMAKE_BINARY_DIR}/bin/assets
+)
 
 # ============ Hazelnut 编辑器（后期添加） ============
 
