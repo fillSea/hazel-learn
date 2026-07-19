@@ -152,6 +152,7 @@ public:
 		texture_shader_.reset(hazel::Shader::create(texture_shader_vertex_src, texture_shader_fragment_src));
 
 		texture_ = hazel::Texture2D::create("assets/textures/Checkerboard.png");
+		cherno_logo_texture_ = hazel::Texture2D::create("assets/textures/ChernoLogo.png");
 
 		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader_)->bind();
 		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader_)->uploadUniformInt("u_Texture", 0);
@@ -185,9 +186,6 @@ public:
 
 		hazel::Renderer::beginScene(camera_);
 
-		texture_->bind();
-		hazel::Renderer::submit(texture_shader_, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
-
 		// hazel::Renderer::submit(shader_, vertex_array_);
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
@@ -202,6 +200,10 @@ public:
 				hazel::Renderer::submit(flat_color_shader_, square_va_, transform);
 			}
 		}
+		texture_->bind();
+		hazel::Renderer::submit(texture_shader_, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		cherno_logo_texture_->bind();
+		hazel::Renderer::submit(texture_shader_, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		hazel::Renderer::endScene();
 	}
@@ -222,6 +224,7 @@ private:
 	hazel::Ref<hazel::Shader> texture_shader_;
 	hazel::Ref<hazel::VertexArray> square_va_;
 	hazel::Ref<hazel::Texture2D> texture_;
+	hazel::Ref<hazel::Texture2D> cherno_logo_texture_;
 
 	hazel::OrthographicCamera camera_;
 	glm::vec3 camera_position_{0.0f, 0.0f, 0.0f};

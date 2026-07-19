@@ -13,6 +13,8 @@ namespace hazel {
  */
 class HAZEL_API RenderCommand {
 public:
+	inline static void init() { s_renderer_api_->init(); }
+
 	/**
 	 * @brief 设置清屏颜色
 	 * @param color RGBA 颜色向量，取值范围 [0, 1]

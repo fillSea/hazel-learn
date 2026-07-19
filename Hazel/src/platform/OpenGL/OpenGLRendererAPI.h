@@ -11,6 +11,8 @@ namespace hazel {
  */
 class OpenGLRendererAPI : public RendererAPI {
 public:
+	void init() override;
+
 	/**
 	 * @brief 设置 OpenGL 清屏颜色
 	 * @param color RGBA 颜色向量，取值范围 [0, 1]

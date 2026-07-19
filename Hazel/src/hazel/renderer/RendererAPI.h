@@ -21,6 +21,8 @@ public:
 	enum class API { None = 0, OpenGL = 1 };
 
 public:
+	virtual void init() = 0;
+
 	/**
 	 * @brief 设置清屏颜色
 	 * @param color RGBA 颜色向量，取值范围 [0, 1]

@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "renderer/Renderer.h"
+
 namespace hazel {
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -15,6 +17,8 @@ Application::Application() {
 
 	window_ = std::unique_ptr<Window>(Window::create());
 	window_->setEventCallback(BIND_EVENT_FN(Application::onEvent));
+
+	Renderer::init();
 
 	imGui_layer_ = new ImGuiLayer();
 	pushOverlay(imGui_layer_);

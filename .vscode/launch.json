@@ -1,24 +1,24 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Debug Sandbox",
-            "type": "lldb",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/bin/Sandbox.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "preLaunchTask": "cmake",
-            // 配置输出到调试控制台
-            "console": "internalConsole"
-        },
-        {
-            "name": "Debug Hazelnut",
-            "type": "lldb",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/bin/Hazelnut.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Sandbox",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/Sandbox.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/build/bin",
+      "preLaunchTask": "cmake",
+      // 配置输出到调试控制台
+      "console": "internalConsole"
+    },
+    {
+      "name": "Debug Hazelnut",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/Hazelnut.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
 }
