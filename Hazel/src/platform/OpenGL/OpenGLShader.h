@@ -4,10 +4,14 @@
 
 #include "hazel/renderer/Shader.h"
 
+// TODO: REMOVE!
+typedef unsigned int GLenum;
+
 namespace hazel {
 
 class HAZEL_API OpenGLShader : public Shader {
 public:
+	explicit OpenGLShader(const std::string& filepath);
 	OpenGLShader(const std::string& vertex_src, const std::string& fragment_src);
 	~OpenGLShader() override;
 
@@ -28,6 +32,11 @@ public:
 
 	void uploadUniformMat3(const std::string& name, const glm::mat3& matrix) const;
 	void uploadUniformMat4(const std::string& name, const glm::mat4& matrix) const;
+
+private:
+	std::string readFile(const std::string& filepath);
+	std::unordered_map<GLenum, std::string> preProcess(const std::string& source);
+	void compile(const std::unordered_map<GLenum, std::string>& shader_sources);
 
 private:
 	uint32_t renderer_id_;

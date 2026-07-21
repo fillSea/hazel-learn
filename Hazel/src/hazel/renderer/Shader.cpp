@@ -10,6 +10,19 @@
 namespace hazel {
 Shader::Shader(const std::string& vertex_src, const std::string& fragment_src) {}
 
+Shader* Shader::create(const std::string& filepath) {
+	switch (Renderer::getAPI()) {
+		case RendererAPI::API::None:
+			HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::OpenGL:
+			return new OpenGLShader(filepath);
+	}
+
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
+	return nullptr;
+}
+
 Shader* Shader::create(const std::string& vertex_src, const std::string& fragment_src) {
 	switch (Renderer::getAPI()) {
 		case RendererAPI::API::None:
