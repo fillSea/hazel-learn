@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "hazel/renderer/Shader.h"
 #include "platform/OpenGL/OpenGLShader.h"
 
 class ExampleLayer : public hazel::Layer {
@@ -67,7 +68,7 @@ public:
 			}
 		)";
 
-		shader_.reset(hazel::Shader::create(vertex_src, fragment_src));
+		shader_ = hazel::Shader::create("VertexPosColor", vertex_src, fragment_src);
 
 		square_va_.reset(hazel::VertexArray::create());
 		float square_vertices[5 * 4] = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
@@ -114,15 +115,16 @@ public:
 				color = vec4(u_Color, 1.0);
 			}
 		)";
-		flat_color_shader_.reset(hazel::Shader::create(flat_color_shader_vertex_src, flat_color_shader_fragment_src));
+		flat_color_shader_ =
+		    hazel::Shader::create("FlatColor", flat_color_shader_vertex_src, flat_color_shader_fragment_src);
 
-		texture_shader_.reset(hazel::Shader::create("assets/shaders/Texture.glsl"));
+		auto texture_shader = shader_library_.load("assets/shaders/Texture.glsl");
 
 		texture_ = hazel::Texture2D::create("assets/textures/Checkerboard.png");
 		cherno_logo_texture_ = hazel::Texture2D::create("assets/textures/ChernoLogo.png");
 
-		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader_)->bind();
-		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader_)->uploadUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader)->bind();
+		std::dynamic_pointer_cast<hazel::OpenGLShader>(texture_shader)->uploadUniformInt("u_Texture", 0);
 	}
 
 	void onUpdate(hazel::Timestep ts) override {
@@ -167,10 +169,12 @@ public:
 				hazel::Renderer::submit(flat_color_shader_, square_va_, transform);
 			}
 		}
+		auto texture_shader = shader_library_.get("Texture");
+
 		texture_->bind();
-		hazel::Renderer::submit(texture_shader_, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		hazel::Renderer::submit(texture_shader, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 		cherno_logo_texture_->bind();
-		hazel::Renderer::submit(texture_shader_, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		hazel::Renderer::submit(texture_shader, square_va_, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		hazel::Renderer::endScene();
 	}
@@ -184,11 +188,12 @@ public:
 	}
 
 private:
+	hazel::ShaderLibrary shader_library_;
+
 	hazel::Ref<hazel::Shader> shader_;
 	hazel::Ref<hazel::VertexArray> vertex_array_;
 
 	hazel::Ref<hazel::Shader> flat_color_shader_;
-	hazel::Ref<hazel::Shader> texture_shader_;
 	hazel::Ref<hazel::VertexArray> square_va_;
 	hazel::Ref<hazel::Texture2D> texture_;
 	hazel::Ref<hazel::Texture2D> cherno_logo_texture_;

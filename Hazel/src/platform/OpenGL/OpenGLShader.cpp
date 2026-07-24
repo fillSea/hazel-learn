@@ -21,10 +21,17 @@ OpenGLShader::OpenGLShader(const std::string& filepath) : Shader("", "") {
 	std::string source = readFile(filepath);
 	auto shader_sources = preProcess(source);
 	compile(shader_sources);
+
+	// Extract name from filepath
+	auto last_slash = filepath.find_last_of("/\\");
+	last_slash = last_slash == std::string::npos ? 0 : last_slash + 1;
+	auto last_dot = filepath.rfind('.');
+	auto count = last_dot == std::string::npos ? filepath.size() - last_slash : last_dot - last_slash;
+	name_ = filepath.substr(last_slash, count);
 }
 
-OpenGLShader::OpenGLShader(const std::string& vertex_src, const std::string& fragment_src)
-    : Shader(vertex_src, fragment_src) {
+OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertex_src, const std::string& fragment_src)
+    : Shader(vertex_src, fragment_src), name_(name) {
 	std::unordered_map<GLenum, std::string> sources;
 	sources[GL_VERTEX_SHADER] = vertex_src;
 	sources[GL_FRAGMENT_SHADER] = fragment_src;
@@ -37,7 +44,7 @@ OpenGLShader::~OpenGLShader() {
 
 std::string OpenGLShader::readFile(const std::string& filepath) {
 	std::string result;
-	std::ifstream in(filepath, std::ios::in, std::ios::binary);
+	std::ifstream in(filepath, std::ios::in | std::ios::binary);
 	if (in) {
 		in.seekg(0, std::ios::end);
 		result.resize(in.tellg());
@@ -72,7 +79,9 @@ std::unordered_map<GLenum, std::string> OpenGLShader::preProcess(const std::stri
 
 void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader_sources) {
 	GLuint program = glCreateProgram();
-	std::vector<GLenum> gl_shader_ids(shader_sources.size());
+	HZ_CORE_ASSERT(shader_sources.size() <= 2, "We only support 2 shaders for now");
+	std::array<GLenum, 2> gl_shader_ids;
+	int gl_shader_id_index = 0;
 	for (const auto& kv : shader_sources) {
 		GLenum type = kv.first;
 		const std::string& source = kv.second;
@@ -93,7 +102,7 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
 			break;
 		}
 		glAttachShader(program, shader);
-		gl_shader_ids.push_back(shader);
+		gl_shader_ids[gl_shader_id_index++] = shader;
 	}
 
 	renderer_id_ = program;

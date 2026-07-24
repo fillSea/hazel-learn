@@ -34,8 +34,62 @@ public:
 	virtual void bind() const = 0;
 	virtual void unBind() const = 0;
 
-	static Shader* create(const std::string& filepath);
-	static Shader* create(const std::string& vertex_src, const std::string& fragment_src);
+	static Ref<Shader> create(const std::string& filepath);
+	static Ref<Shader> create(const std::string& name, const std::string& vertex_src, const std::string& fragment_src);
+
+	[[nodiscard]] virtual const std::string& getName() const = 0;
+};
+
+/**
+ * @brief 着色器库
+ *
+ * 管理着色器程序的注册、加载与获取，通过名称索引缓存已创建的着色器实例。
+ * 支持从文件加载着色器并自动注册到库中，避免重复创建。
+ */
+class HAZEL_API ShaderLibrary {
+public:
+	/**
+	 * @brief 以指定名称注册着色器
+	 * @param name 着色器名称
+	 * @param shader 着色器实例
+	 */
+	void add(const std::string& name, const Ref<Shader>& shader);
+	/**
+	 * @brief 以着色器自身名称注册着色器
+	 * @param shader 着色器实例
+	 */
+	void add(const Ref<Shader>& shader);
+
+	/**
+	 * @brief 从文件加载着色器并注册
+	 * @param filepath 着色器文件路径
+	 * @return 加载的着色器实例
+	 */
+	Ref<Shader> load(const std::string& filepath);
+	/**
+	 * @brief 从文件加载着色器并以指定名称注册
+	 * @param name 着色器名称
+	 * @param filepath 着色器文件路径
+	 * @return 加载的着色器实例
+	 */
+	Ref<Shader> load(const std::string& name, const std::string& filepath);
+
+	/**
+	 * @brief 根据名称获取已注册的着色器
+	 * @param name 着色器名称
+	 * @return 对应的着色器实例
+	 */
+	Ref<Shader> get(const std::string& name);
+
+	/**
+	 * @brief 检查指定名称的着色器是否已注册
+	 * @param name 着色器名称
+	 * @return 存在返回 true，否则返回 false
+	 */
+	bool isExist(const std::string& name) const;
+
+private:
+	std::unordered_map<std::string, Ref<Shader>> shaders_;  ///< 着色器映射表，名称 -> 着色器实例
 };
 
 }  // namespace hazel
