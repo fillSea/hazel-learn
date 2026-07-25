@@ -41,6 +41,16 @@ public:
 		recalculateViewMatrix();
 	}
 
+	/**
+	 * @brief 设置正交投影矩阵
+	 * 使用 glm::ortho 重新构造投影矩阵，并更新投影×视图组合矩阵。
+	 * @param left   视口左边界
+	 * @param right  视口右边界
+	 * @param bottom 视口下边界
+	 * @param top    视口上边界
+	 */
+	void setProjection(float left, float right, float bottom, float top);
+
 	/** @brief 获取投影矩阵 */
 	[[nodiscard]] const glm::mat4& getProjectionMatrix() const { return projection_matrix_; }
 	/** @brief 获取视图矩阵 */

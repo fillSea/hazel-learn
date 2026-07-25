@@ -11,6 +11,7 @@
 #include "hazel/core/Timestep.h"
 
 // ---Renderer------------------------
+#include "hazel/OrthographicCameraController.h"
 #include "hazel/renderer/Buffer.h"
 #include "hazel/renderer/OrthographicCamera.h"
 #include "hazel/renderer/RenderCommand.h"

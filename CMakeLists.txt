@@ -88,6 +88,7 @@ set(HAZEL_SOURCES
     Hazel/src/platform/OpenGL/OpenGLShader.cpp
     Hazel/src/hazel/renderer/Texture.cpp
     Hazel/src/platform/OpenGL/OpenGLTexture.cpp
+    Hazel/src/hazel/OrthographicCameraController.cpp
 )
 
 add_library(Hazel STATIC ${HAZEL_SOURCES})

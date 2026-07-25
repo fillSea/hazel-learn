@@ -9,7 +9,7 @@
 
 class ExampleLayer : public hazel::Layer {
 public:
-	ExampleLayer() : Layer("Example"), camera_(-1.6f, 1.6f, -0.9f, 0.9f) {
+	ExampleLayer() : Layer("Example"), camera_controller_(1280.0f / 720.0f) {
 		// 创建并绑定顶点数组对象 (VAO)，后续顶点属性配置都会记录在此 VAO 中
 		vertex_array_.reset(hazel::VertexArray::create());
 
@@ -128,32 +128,12 @@ public:
 	}
 
 	void onUpdate(hazel::Timestep ts) override {
-		if (hazel::Input::isKeyPressed(HZ_KEY_LEFT)) {
-			camera_position_.x += camera_move_speed_ * ts;
-		} else if (hazel::Input::isKeyPressed(HZ_KEY_RIGHT)) {
-			camera_position_.x -= camera_move_speed_ * ts;
-		}
-
-		if (hazel::Input::isKeyPressed(HZ_KEY_UP)) {
-			camera_position_.y -= camera_move_speed_ * ts;
-		} else if (hazel::Input::isKeyPressed(HZ_KEY_DOWN)) {
-			camera_position_.y += camera_move_speed_ * ts;
-		}
-
-		if (hazel::Input::isKeyPressed(HZ_KEY_A)) {
-			camera_rotation_ += camera_rotation_speed_ * ts;
-		}
-		if (hazel::Input::isKeyPressed(HZ_KEY_D)) {
-			camera_rotation_ -= camera_rotation_speed_ * ts;
-		}
+		camera_controller_.onUpdate(ts);
 
 		hazel::RenderCommand::setClearColor({0.1f, 0.1f, 0.1f, 1});
 		hazel::RenderCommand::clear();
 
-		camera_.setPosition(camera_position_);
-		camera_.setRotation(camera_rotation_);
-
-		hazel::Renderer::beginScene(camera_);
+		hazel::Renderer::beginScene(camera_controller_.getCamera());
 
 		// hazel::Renderer::submit(shader_, vertex_array_);
 
@@ -179,7 +159,7 @@ public:
 		hazel::Renderer::endScene();
 	}
 
-	void onEvent(hazel::Event& event) override {}
+	void onEvent(hazel::Event& e) override { camera_controller_.onEvent(e); }
 
 	void onImGuiRender() override {
 		ImGui::Begin("Settings");
@@ -198,12 +178,7 @@ private:
 	hazel::Ref<hazel::Texture2D> texture_;
 	hazel::Ref<hazel::Texture2D> cherno_logo_texture_;
 
-	hazel::OrthographicCamera camera_;
-	glm::vec3 camera_position_{0.0f, 0.0f, 0.0f};
-	float camera_move_speed_{5.0f};
-
-	float camera_rotation_{0.0f};
-	float camera_rotation_speed_{180.0f};
+	hazel::OrthographicCameraController camera_controller_;
 
 	glm::vec3 square_color_{0.2f, 0.3f, 0.8f};
 };

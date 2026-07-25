@@ -19,4 +19,9 @@ void OrthographicCamera::recalculateViewMatrix() {
 	view_matrix_projection_ = projection_matrix_ * view_matrix_;
 }
 
+void OrthographicCamera::setProjection(float left, float right, float bottom, float top) {
+	projection_matrix_ = glm::ortho(left, right, bottom, top, -1.0f, 1.0f);
+	view_matrix_projection_ = projection_matrix_ * view_matrix_;
+}
+
 }  // namespace hazel
