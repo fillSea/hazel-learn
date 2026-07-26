@@ -3,7 +3,7 @@
 #include <functional>
 #include <string>
 
-#include "hazel/Core.h"
+#include "hazel/core/Core.h"
 #include "hazel/events/Event.h"
 
 namespace hazel {

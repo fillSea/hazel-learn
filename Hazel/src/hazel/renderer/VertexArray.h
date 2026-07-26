@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "hazel/Core.h"
+#include "hazel/core/Core.h"
 #include "hazel/renderer/Buffer.h"
 
 namespace hazel {

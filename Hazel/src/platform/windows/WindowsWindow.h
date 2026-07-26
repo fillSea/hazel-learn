@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hazel/Window.h"
+#include "hazel/core/Window.h"
 
 class GLFWwindow;
 

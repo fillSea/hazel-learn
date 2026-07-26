@@ -65,30 +65,44 @@ target_include_directories(stb_image PUBLIC Hazel/third_party/stb_image)
 
 set(HAZEL_SOURCES
     Hazel/src/hzpch.cpp
-    Hazel/src/hazel/Application.cpp
-    Hazel/src/hazel/Layer.cpp
-    Hazel/src/hazel/LayerStack.cpp
-    Hazel/src/hazel/Log.cpp
-    Hazel/src/hazel/utils/KeyUtil.cpp
-    Hazel/src/hazel/ImGui/ImGuiBuild.cpp
-    Hazel/src/hazel/ImGui/ImGuiLayer.cpp
-    Hazel/src/platform/OpenGL/OpenGLContext.cpp
-    Hazel/src/platform/Windows/WindowsInput.cpp
-    Hazel/src/platform/Windows/WindowsWindow.cpp
+
+    # core
+    Hazel/src/hazel/core/Application.cpp
+    Hazel/src/hazel/core/Layer.cpp
+    Hazel/src/hazel/core/LayerStack.cpp
+    Hazel/src/hazel/core/Log.cpp
+    
+    #renderer
     Hazel/src/hazel/renderer/Shader.cpp
     Hazel/src/hazel/renderer/Buffer.cpp
     Hazel/src/hazel/renderer/Renderer.cpp
-    Hazel/src/platform/OpenGL/OpenGLBuffer.cpp
     Hazel/src/hazel/renderer/VertexArray.cpp
-    Hazel/src/platform/OpenGL/OpenGLVertexArray.cpp
     Hazel/src/hazel/renderer/RenderCommand.cpp
     Hazel/src/hazel/renderer/RendererAPI.cpp
-    Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
     Hazel/src/hazel/renderer/OrthographicCamera.cpp
-    Hazel/src/platform/OpenGL/OpenGLShader.cpp
     Hazel/src/hazel/renderer/Texture.cpp
+    Hazel/src/hazel/renderer/OrthographicCameraController.cpp
+    
+    # ImGui
+    Hazel/src/hazel/ImGui/ImGuiBuild.cpp
+    Hazel/src/hazel/ImGui/ImGuiLayer.cpp
+    
+    # utils
+    Hazel/src/hazel/utils/KeyUtil.cpp
+
+    # platform
+    # OpenGL
+    Hazel/src/platform/OpenGL/OpenGLContext.cpp
+    Hazel/src/platform/OpenGL/OpenGLBuffer.cpp
+    Hazel/src/platform/OpenGL/OpenGLVertexArray.cpp
+    Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
+    Hazel/src/platform/OpenGL/OpenGLShader.cpp
     Hazel/src/platform/OpenGL/OpenGLTexture.cpp
-    Hazel/src/hazel/OrthographicCameraController.cpp
+
+    # Widnows
+    Hazel/src/platform/Windows/WindowsInput.cpp
+    Hazel/src/platform/Windows/WindowsWindow.cpp
+
 )
 
 add_library(Hazel STATIC ${HAZEL_SOURCES})

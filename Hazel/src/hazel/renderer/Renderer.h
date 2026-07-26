@@ -2,7 +2,7 @@
 #include "OrthographicCamera.h"
 #include "RendererAPI.h"
 #include "Shader.h"
-#include "hazel/Core.h"
+#include "hazel/core/Core.h"
 
 namespace hazel {
 

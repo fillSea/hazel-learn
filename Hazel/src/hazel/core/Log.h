@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.h"
+#include "hazel/core/Core.h"
 #include "spdlog/logger.h"
 
 namespace hazel {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "hazel/Application.h"
-#include "hazel/Log.h"
+#include "hazel/core/Application.h"
+#include "hazel/core/Log.h"
 
 #ifdef HZ_PLATFORM_WINDOWS
 int main(int argc, char** argv) {

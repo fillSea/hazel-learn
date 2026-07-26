@@ -1,9 +1,9 @@
 #pragma once
-#include "Core.h"
 #include "hazel/ImGui/ImGuiLayer.h"
-#include "hazel/Layer.h"
-#include "hazel/LayerStack.h"
-#include "hazel/Window.h"
+#include "hazel/core/Core.h"
+#include "hazel/core/Layer.h"
+#include "hazel/core/LayerStack.h"
+#include "hazel/core/Window.h"
 #include "hazel/events/ApplicationEvent.h"
 
 namespace hazel {

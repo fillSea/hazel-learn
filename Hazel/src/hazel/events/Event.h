@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 
-#include "hazel/Core.h"
+#include "hazel/core/Core.h"
 
 namespace hazel {
 // Events in Hazel are currently blocking, meaning when an event occurs it

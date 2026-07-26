@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "hazel/Log.h"
+#include "hazel/core/Log.h"
 
 #ifdef HZ_PLATFORM_WINDOWS
 #include <Windows.h>

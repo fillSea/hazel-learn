@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "hazel/Application.h"
+#include "hazel/core/Application.h"
 
 namespace hazel {
 Input* Input::instance_ = new WindowsInput();

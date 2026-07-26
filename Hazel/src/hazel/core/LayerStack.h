@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "hazel/Core.h"
-#include "hazel/Layer.h"
+#include "hazel/core/Core.h"
+#include "hazel/core/Layer.h"
 
 namespace hazel {
 /**
