@@ -37,6 +37,7 @@ void Application::pushOverlay(Layer* overlay) {
 void Application::onEvent(Event& e) {
 	EventDispatcher dispatcher(e);
 	dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::onWindowClose));
+	dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::onWindowResize));
 
 	// 从后往前遍历，先处理上层的事件
 	for (auto it = layer_stack_.end(); it != layer_stack_.begin();) {
@@ -55,8 +56,10 @@ void Application::run() {
 		Timestep timestep(time - last_frame_time_);
 		last_frame_time_ = time;
 
-		for (Layer* layer : layer_stack_) {
-			layer->onUpdate(timestep);
+		if (!minimized_) {
+			for (Layer* layer : layer_stack_) {
+				layer->onUpdate(timestep);
+			}
 		}
 
 		imGui_layer_->begin();
@@ -72,5 +75,17 @@ void Application::run() {
 bool Application::onWindowClose(WindowCloseEvent& e) {
 	running_ = false;
 	return true;
+}
+
+bool Application::onWindowResize(WindowResizeEvent& e) {
+	if (e.getWidth() == 0 || e.getHeight() == 0) {
+		minimized_ = true;
+		return false;
+	}
+
+	minimized_ = false;
+	Renderer::onWindowResize(e.getWidth(), e.getHeight());
+
+	return false;
 }
 }  // namespace hazel

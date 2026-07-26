@@ -43,6 +43,8 @@ public:
 	 */
 	inline static RendererAPI::API getAPI() { return RendererAPI::getAPI(); }
 
+	static void onWindowResize(uint32_t width, uint32_t height);
+
 private:
 	/// 当前场景的渲染数据
 	struct SceneData {

@@ -27,4 +27,8 @@ void Renderer::submit(const std::shared_ptr<Shader>& shader, const std::shared_p
 	vertex_array->bind();
 	RenderCommand::drawIndexed(vertex_array);
 }
+
+void Renderer::onWindowResize(uint32_t width, uint32_t height) {
+	RenderCommand::setViewport(0, 0, width, height);
+}
 }  // namespace hazel

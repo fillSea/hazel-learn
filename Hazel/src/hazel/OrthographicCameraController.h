@@ -32,6 +32,9 @@ public:
 	/// @return 正交相机的 const 引用。
 	[[nodiscard]] const OrthographicCamera& getCamera() const { return camera_; }
 
+	[[nodiscard]] float getZoomLevel() const { return zoom_level_; }
+	void setZoomLevel(float level) { zoom_level_ = level; }
+
 private:
 	/// @brief 处理鼠标滚轮事件，用于缩放相机。
 	/// @param e 鼠标滚轮事件。

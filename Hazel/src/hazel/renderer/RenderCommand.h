@@ -34,6 +34,10 @@ public:
 		s_renderer_api_->drawIndexed(vertex_array);
 	}
 
+	inline static void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+		s_renderer_api_->setViewport(x, y, width, height);
+	}
+
 private:
 	/// 当前平台渲染 API 实例指针，由 Renderer 在初始化时设置
 	static RendererAPI* s_renderer_api_;

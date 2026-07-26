@@ -46,6 +46,16 @@ public:
 	 */
 	inline static API getAPI() { return s_api_; }
 
+	/**
+	 * @brief 设置视口区域
+	 *
+	 * @param x 视口左上角 x 坐标
+	 * @param y 视口左上角 y 坐标
+	 * @param width 视口宽度
+	 * @param height 视口高度
+	 */
+	virtual void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
+
 private:
 	/// 当前激活的图形 API 类型，由 Renderer 在初始化时设置
 	static API s_api_;

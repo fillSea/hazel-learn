@@ -34,6 +34,7 @@ public:
 
 private:
 	bool onWindowClose(WindowCloseEvent& e);
+	bool onWindowResize(WindowResizeEvent& e);
 
 private:
 	static Application* instance_;
@@ -44,6 +45,7 @@ private:
 	LayerStack layer_stack_;
 
 	bool running_{true};
+	bool minimized_{false};
 
 	float last_frame_time_{0.0f};  ///< 上一帧的时间戳
 };
