@@ -20,7 +20,3 @@
 #include "hazel/renderer/Texture.h"
 #include "hazel/renderer/VertexArray.h"
 // -----------------------------------
-
-//---Entry Point---------------------
-#include "hazel/core/EntryPoint.h"
-//-----------------------------------

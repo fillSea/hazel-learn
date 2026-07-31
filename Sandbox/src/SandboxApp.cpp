@@ -1,9 +1,11 @@
 #include <Hazel.h>
+#include <hazel/core/EntryPoint.h>
 #include <imgui.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Sandbox2D.h"
 #include "hazel/renderer/Shader.h"
 #include "platform/OpenGL/OpenGLShader.h"
 
@@ -11,7 +13,7 @@ class ExampleLayer : public hazel::Layer {
 public:
 	ExampleLayer() : Layer("Example"), camera_controller_(1280.0f / 720.0f) {
 		// 创建并绑定顶点数组对象 (VAO)，后续顶点属性配置都会记录在此 VAO 中
-		vertex_array_.reset(hazel::VertexArray::create());
+		vertex_array_ = hazel::VertexArray::create();
 
 		// 三角形的 3 个顶点，每个顶点 3 个分量 (x, y, z)
 		float vertices[3 * 7] = {-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
@@ -70,7 +72,7 @@ public:
 
 		shader_ = hazel::Shader::create("VertexPosColor", vertex_src, fragment_src);
 
-		square_va_.reset(hazel::VertexArray::create());
+		square_va_ = hazel::VertexArray::create();
 		float square_vertices[5 * 4] = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
 		                                0.5f,  0.5f,  0.0f, 1.0f, 1.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f};
 		hazel::Ref<hazel::VertexBuffer> square_vb;
@@ -185,7 +187,7 @@ private:
 
 class Sandbox : public hazel::Application {
 public:
-	Sandbox() { pushLayer(new ExampleLayer()); }
+	Sandbox() { pushLayer(new Sandbox2D()); }
 	~Sandbox() override = default;
 
 	Sandbox(const Sandbox&) = delete;

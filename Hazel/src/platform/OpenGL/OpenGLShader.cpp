@@ -112,14 +112,14 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
 
 	// Note the different functions here: glGetProgram* instead of glGetShader*.
 	GLint is_linked = 0;
-	glGetProgramiv(program, GL_LINK_STATUS, (int*) &is_linked);
+	glGetProgramiv(program, GL_LINK_STATUS, static_cast<int*>(&is_linked));
 	if (is_linked == GL_FALSE) {
 		GLint max_length = 0;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
 
 		// The maxLength includes the NULL character
 		std::vector<GLchar> info_log(max_length);
-		glGetProgramInfoLog(program, max_length, &max_length, &info_log[0]);
+		glGetProgramInfoLog(program, max_length, &max_length, info_log.data());
 
 		// We don't need the program anymore.
 		glDeleteProgram(program);

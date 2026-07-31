@@ -28,7 +28,7 @@ public:
 	 * @brief 工厂方法：根据当前图形 API 创建对应的 VertexArray 实例
 	 * @return 新创建的 VertexArray 指针
 	 */
-	static VertexArray* create();
+	static Ref<VertexArray> create();
 
 	/**
 	 * @brief 绑定当前顶点数组到图形管线
