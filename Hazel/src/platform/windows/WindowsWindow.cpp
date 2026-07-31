@@ -49,7 +49,7 @@ void WindowsWindow::init(const WindowProps& props) {
 	window_ = glfwCreateWindow(static_cast<int>(props.width), static_cast<int>(props.height), props.title.c_str(),
 	                           nullptr, nullptr);
 
-	context_ = new OpenGLContext(window_);
+	context_ = createScope<OpenGLContext>(window_);
 	context_->init();
 
 	// 设置窗口用户指针

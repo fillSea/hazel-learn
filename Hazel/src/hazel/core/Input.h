@@ -20,6 +20,6 @@ protected:
 	virtual float getMouseYImpl() = 0;
 
 private:
-	static Input* instance_;
+	static Scope<Input> instance_;
 };
 }  // namespace hazel

@@ -33,8 +33,8 @@ private:
 	virtual void shutdown();
 
 private:
-	GLFWwindow* window_;        // GLFW 窗口指针
-	GraphicsContext* context_;  // 图形上下文指针
+	GLFWwindow* window_;              // GLFW 窗口指针
+	Scope<GraphicsContext> context_;  // 图形上下文指针
 
 	// 窗口数据
 	struct WindowData {

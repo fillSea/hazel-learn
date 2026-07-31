@@ -51,7 +51,7 @@ private:
 		glm::mat4 view_projection_matrix;  ///< 视图投影组合矩阵
 	};
 
-	static SceneData* s_scene_data_;  ///< 场景数据单例指针
+	static Scope<SceneData> s_scene_data_;  ///< 场景数据单例指针
 };
 
 }  // namespace hazel

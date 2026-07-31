@@ -4,7 +4,7 @@
 #include "platform/OpenGL/OpenGLShader.h"
 
 namespace hazel {
-Renderer::SceneData* Renderer::s_scene_data_ = new Renderer::SceneData();
+Scope<Renderer::SceneData> Renderer::s_scene_data_ = createScope<Renderer::SceneData>();
 
 void Renderer::init() {
 	RenderCommand::init();

@@ -5,7 +5,7 @@
 #include "hazel/core/Application.h"
 
 namespace hazel {
-Input* Input::instance_ = new WindowsInput();
+Scope<Input> Input::instance_ = createScope<WindowsInput>();
 
 bool WindowsInput::isKeyPressedImpl(int keycode) {
 	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
