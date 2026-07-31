@@ -135,6 +135,7 @@ void OpenGLShader::compile(const std::unordered_map<GLenum, std::string>& shader
 
 	for (auto id : gl_shader_ids) {
 		glDetachShader(program, id);
+		glDeleteShader(id);
 	}
 }
 
