@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 #include "RenderCommand.h"
+#include "Renderer2D.h"
 #include "platform/OpenGL/OpenGLShader.h"
 
 namespace hazel {
@@ -8,6 +9,7 @@ Scope<Renderer::SceneData> Renderer::s_scene_data_ = createScope<Renderer::Scene
 
 void Renderer::init() {
 	RenderCommand::init();
+	Renderer2D::init();
 }
 
 void Renderer::beginScene(OrthographicCamera& camera) {

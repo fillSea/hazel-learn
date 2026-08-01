@@ -82,6 +82,7 @@ set(HAZEL_SOURCES
     Hazel/src/hazel/renderer/OrthographicCamera.cpp
     Hazel/src/hazel/renderer/Texture.cpp
     Hazel/src/hazel/renderer/OrthographicCameraController.cpp
+    Hazel/src/hazel/renderer/Renderer2D.cpp
     
     # ImGui
     Hazel/src/hazel/ImGui/ImGuiBuild.cpp
