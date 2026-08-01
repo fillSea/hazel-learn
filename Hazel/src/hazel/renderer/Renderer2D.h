@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OrthographicCamera.h"
+#include "Texture.h"
 
 namespace hazel {
 
@@ -40,6 +41,18 @@ public:
 	/// @param size 四边形的大小（宽、高）。
 	/// @param color 四边形颜色（RGBA）。
 	static void drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
+
+	/// @brief 绘制一个带纹理的四边形（2D 位置重载）。
+	/// @param position 四边形中心位置（2D 坐标，Z 取 0）。
+	/// @param size 四边形的大小（宽、高）。
+	/// @param texture 要贴到四边形上的 2D 纹理。
+	static void drawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture);
+
+	/// @brief 绘制一个带纹理的四边形（3D 位置重载）。
+	/// @param position 四边形中心位置（3D 坐标）。
+	/// @param size 四边形的大小（宽、高）。
+	/// @param texture 要贴到四边形上的 2D 纹理。
+	static void drawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture);
 };
 
 }  // namespace hazel
