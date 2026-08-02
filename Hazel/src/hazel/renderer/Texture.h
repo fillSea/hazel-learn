@@ -26,6 +26,11 @@ public:
 	/// @brief 获取纹理高度（像素）
 	virtual uint32_t getHeight() const = 0;
 
+	/// @brief 更新纹理数据
+	/// @param data 指向新纹理数据的指针
+	/// @param size 数据大小（字节）
+	virtual void setData(void* data, uint32_t size) = 0;
+
 	/// @brief 将纹理绑定到指定纹理槽
 	/// @param slot 纹理槽索引，默认为 0
 	virtual void bind(uint32_t slot = 0) const = 0;
@@ -36,6 +41,12 @@ public:
  */
 class HAZEL_API Texture2D : public Texture {
 public:
+	/// @brief 以指定宽高创建 2D 纹理
+	/// @param width 纹理宽度（像素）
+	/// @param height 纹理高度（像素）
+	/// @return Texture2D 的智能指针
+	static Ref<Texture2D> create(uint32_t width, uint32_t height);
+
 	/// @brief 从文件路径创建 2D 纹理
 	/// @param path 图片文件路径
 	/// @return Texture2D 的智能指针

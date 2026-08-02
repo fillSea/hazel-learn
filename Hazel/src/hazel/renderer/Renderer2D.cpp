@@ -10,8 +10,8 @@ namespace hazel {
 
 struct Renderer2DStorage {
 	Ref<VertexArray> quad_vertex_array;
-	Ref<Shader> flat_color_shader;
 	Ref<Shader> texture_shader;
+	Ref<Texture2D> white_texture;
 };
 
 static Renderer2DStorage* g_s_data;
@@ -33,7 +33,9 @@ void Renderer2D::init() {
 	square_ib.reset(IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t)));
 	g_s_data->quad_vertex_array->setIndexBuffer(square_ib);
 
-	g_s_data->flat_color_shader = Shader::create("assets/shaders/FlatColor.glsl");
+	g_s_data->white_texture = Texture2D::create(1, 1);
+	uint32_t white_texture_data = 0xffffffff;
+	g_s_data->white_texture->setData(&white_texture_data, sizeof(uint32_t));
 
 	g_s_data->texture_shader = Shader::create("assets/shaders/Texture.glsl");
 	g_s_data->texture_shader->bind();
@@ -45,9 +47,6 @@ void Renderer2D::shutdown() {
 }
 
 void Renderer2D::beginScene(const OrthographicCamera& camera) {
-	g_s_data->flat_color_shader->bind();
-	g_s_data->flat_color_shader->setMat4("u_ViewProjection", camera.getViewProjectionMatrix());
-
 	g_s_data->texture_shader->bind();
 	g_s_data->texture_shader->setMat4("u_ViewProjection", camera.getViewProjectionMatrix());
 }
@@ -59,12 +58,12 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 }
 
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
-	g_s_data->flat_color_shader->bind();
-	g_s_data->flat_color_shader->setFloat4("u_Color", color);
+	g_s_data->texture_shader->setFloat4("u_Color", color);
+	g_s_data->white_texture->bind();
 
 	glm::mat4 transform =
 	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-	g_s_data->flat_color_shader->setMat4("u_Transform", transform);
+	g_s_data->texture_shader->setMat4("u_Transform", transform);
 
 	g_s_data->quad_vertex_array->bind();
 	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
@@ -75,13 +74,12 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 }
 
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture) {
-	g_s_data->texture_shader->bind();
+	g_s_data->texture_shader->setFloat4("u_Color", glm::vec4(1.0f));
+	texture->bind();
 
 	glm::mat4 transform =
 	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 	g_s_data->texture_shader->setMat4("u_Transform", transform);
-
-	texture->bind();
 
 	g_s_data->quad_vertex_array->bind();
 	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
