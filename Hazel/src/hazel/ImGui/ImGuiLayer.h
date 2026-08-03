@@ -1,10 +1,6 @@
 #pragma once
 
 #include "hazel/core/Layer.h"
-#include "hazel/events/ApplicationEvent.h"
-#include "hazel/events/Event.h"
-#include "hazel/events/KeyEvent.h"
-#include "hazel/events/MouseEvent.h"
 
 namespace hazel {
 class HAZEL_API ImGuiLayer : public Layer {

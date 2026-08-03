@@ -74,9 +74,6 @@ void ImGuiLayer::end() {
 	}
 }
 
-void ImGuiLayer::onImGuiRender() {
-	static bool s_show = true;
-	ImGui::ShowDemoWindow(&s_show);
-}
+void ImGuiLayer::onImGuiRender() {}
 
 }  // namespace hazel

@@ -29,4 +29,11 @@ private:
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 
 	glm::vec4 square_color_ = {0.2f, 0.3f, 0.8f, 1.0f};
+
+	struct ProfileResult {
+		const char* name;
+		float time;
+	};
+
+	std::vector<ProfileResult> profile_results_;
 };
