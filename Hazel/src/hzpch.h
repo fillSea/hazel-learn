@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "Hazel/debug/Instrumentor.h"
 #include "hazel/core/Log.h"
 
 #ifdef HZ_PLATFORM_WINDOWS

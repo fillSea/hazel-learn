@@ -21,3 +21,5 @@
 #include "hazel/renderer/Texture.h"
 #include "hazel/renderer/VertexArray.h"
 // -----------------------------------
+
+#include "hazel/debug/Instrumentor.h"
