@@ -152,6 +152,7 @@ target_precompile_headers(Hazel PRIVATE Hazel/src/hzpch.h)
 set(SANDBOX_SOURCES
     Sandbox/src/SandboxApp.cpp
     Sandbox/src/Sandbox2D.cpp
+    Sandbox/src/ExampleLayer.cpp
 )
 
 add_executable(Sandbox ${SANDBOX_SOURCES})
