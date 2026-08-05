@@ -23,14 +23,16 @@
     "**/.git/**": true,
     "**/node_modules/**": true,
     "**/.cache/**": true,
-    "**/.kilo/**": true
+    "**/.kilo/**": true,
+    "**/.vscode/**": true
   },
   // VSCode层面屏蔽不需要搜索的文件，避免clangd遍历
   "search.exclude": {
     "**/build": true,
     "**/third_party": true,
     "**/.cache": true,
-    "**/.kilo": true
+    "**/.kilo": true,
+    "**/.vscode": true
   },
   "files.associations": {
     "__bit_reference": "cpp",
