@@ -8,8 +8,14 @@ namespace hazel {
 Scope<Renderer::SceneData> Renderer::s_scene_data_ = createScope<Renderer::SceneData>();
 
 void Renderer::init() {
+	HZ_PROFILE_FUNCTION();
+
 	RenderCommand::init();
 	Renderer2D::init();
+}
+
+void Renderer::shutdown() {
+	Renderer2D::shutdown();
 }
 
 void Renderer::beginScene(OrthographicCamera& camera) {

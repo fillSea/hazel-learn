@@ -8,19 +8,20 @@
 Sandbox2D::Sandbox2D() : Layer("Sandbox2D"), camera_controller_(1280.0f / 720.0f) {}
 
 void Sandbox2D::onAttach() {
+	HZ_PROFILE_FUNCTION();
+
 	checker_board_texture_ = hazel::Texture2D::create("assets/textures/Checkerboard.png");
 }
 
-void Sandbox2D::onDetach() {}
+void Sandbox2D::onDetach() {
+	HZ_PROFILE_FUNCTION();
+}
 
 void Sandbox2D::onUpdate(hazel::Timestep ts) {
 	HZ_PROFILE_FUNCTION();
 
 	// Update
-	{
-		HZ_PROFILE_SCOPE("CameraController::OnUpdate");
-		camera_controller_.onUpdate(ts);
-	}
+	camera_controller_.onUpdate(ts);
 
 	// Render
 	{

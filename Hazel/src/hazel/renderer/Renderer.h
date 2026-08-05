@@ -16,6 +16,8 @@ class HAZEL_API Renderer {
 public:
 	static void init();
 
+	static void shutdown();
+
 	/**
 	 * @brief 开始场景渲染
 	 * 从相机获取视图投影矩阵并存储到场景数据中，供后续提交绘制调用使用。

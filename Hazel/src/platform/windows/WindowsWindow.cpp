@@ -23,14 +23,20 @@ Window* Window::create(const WindowProps& props) {
 }
 
 WindowsWindow::WindowsWindow(const WindowProps& props) {
+	HZ_PROFILE_FUNCTION();
+
 	init(props);
 }
 
 WindowsWindow::~WindowsWindow() {
+	HZ_PROFILE_FUNCTION();
+
 	shutdown();
 }
 
 void WindowsWindow::init(const WindowProps& props) {
+	HZ_PROFILE_FUNCTION();
+
 	data_.title = props.title;
 	data_.width = props.width;
 	data_.height = props.height;
@@ -38,16 +44,20 @@ void WindowsWindow::init(const WindowProps& props) {
 	HZ_CORE_INFO("Creating window {0} ({1}, {2})", props.title, props.width, props.height);
 
 	if (g_s_glfw_window_count == 0) {
+		HZ_PROFILE_SCOPE("glfwInit");
+
 		HZ_CORE_INFO("Initializing GLFW");
 		int success = glfwInit();
 		HZ_CORE_ASSERT(success, "Could not intialize GLFW!");
 		glfwSetErrorCallback(onGLFWError);
 	}
 
-	window_ = glfwCreateWindow(static_cast<int>(props.width), static_cast<int>(props.height), props.title.c_str(),
-	                           nullptr, nullptr);
-
-	++g_s_glfw_window_count;
+	{
+		HZ_PROFILE_SCOPE("glfwCreateWindow");
+		window_ = glfwCreateWindow(static_cast<int>(props.width), static_cast<int>(props.height), props.title.c_str(),
+		                           nullptr, nullptr);
+		++g_s_glfw_window_count;
+	}
 
 	context_ = createScope<OpenGLContext>(window_);
 	context_->init();
@@ -134,6 +144,8 @@ void WindowsWindow::init(const WindowProps& props) {
 }
 
 void WindowsWindow::shutdown() {
+	HZ_PROFILE_FUNCTION();
+
 	glfwDestroyWindow(window_);
 
 	if (--g_s_glfw_window_count == 0) {
@@ -143,11 +155,15 @@ void WindowsWindow::shutdown() {
 }
 
 void WindowsWindow::onUpdate() {
+	HZ_PROFILE_FUNCTION();
+
 	glfwPollEvents();
 	context_->swapBuffers();
 }
 
 void WindowsWindow::setVSync(bool enabled) {
+	HZ_PROFILE_FUNCTION();
+
 	if (enabled) {
 		// 开启垂直同步
 		glfwSwapInterval(1);

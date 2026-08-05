@@ -15,12 +15,10 @@ LayerStack::~LayerStack() {
 void LayerStack::pushLayer(Layer* layer) {
 	layers_.emplace(layers_.begin() + layer_insert_index_, layer);
 	layer_insert_index_++;
-	layer->onAttach();
 }
 
 void LayerStack::pushOverlay(Layer* overlay) {
 	layers_.emplace_back(overlay);
-	overlay->onAttach();
 }
 
 void LayerStack::popLayer(Layer* layer) {

@@ -5,6 +5,8 @@
 namespace hazel {
 
 static GLenum shaderDataTypeToOpenGLBaseType(ShaderDataType type) {
+	HZ_PROFILE_FUNCTION();
+
 	switch (type) {
 		case hazel::ShaderDataType::Float:
 			return GL_FLOAT;
@@ -37,22 +39,32 @@ static GLenum shaderDataTypeToOpenGLBaseType(ShaderDataType type) {
 }
 
 OpenGLVertexArray::OpenGLVertexArray() {
+	HZ_PROFILE_FUNCTION();
+
 	glCreateVertexArrays(1, &renderer_id_);
 }
 
 OpenGLVertexArray::~OpenGLVertexArray() {
+	HZ_PROFILE_FUNCTION();
+
 	glDeleteVertexArrays(1, &renderer_id_);
 }
 
 void OpenGLVertexArray::bind() const {
+	HZ_PROFILE_FUNCTION();
+
 	glBindVertexArray(renderer_id_);
 }
 
 void OpenGLVertexArray::unBind() const {
+	HZ_PROFILE_FUNCTION();
+
 	glBindVertexArray(0);
 }
 
 void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertex_buffer) {
+	HZ_PROFILE_FUNCTION();
+
 	HZ_CORE_ASSERT(vertex_buffer->getLayout().getElements().size(), "Vertex Buffer has no layout!");
 
 	glBindVertexArray(renderer_id_);
@@ -72,6 +84,8 @@ void OpenGLVertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& ver
 }
 
 void OpenGLVertexArray::setIndexBuffer(const std::shared_ptr<IndexBuffer>& index_buffer) {
+	HZ_PROFILE_FUNCTION();
+
 	glBindVertexArray(renderer_id_);
 	index_buffer->bind();
 
