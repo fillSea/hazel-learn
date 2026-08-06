@@ -7,15 +7,15 @@
 namespace hazel {
 Scope<Input> Input::instance_ = createScope<WindowsInput>();
 
-bool WindowsInput::isKeyPressedImpl(int keycode) {
+bool WindowsInput::isKeyPressedImpl(KeyCode key) {
 	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
-	auto state = glfwGetKey(window, keycode);
+	auto state = glfwGetKey(window, static_cast<int32_t>(key));
 	return state == GLFW_PRESS || state == GLFW_REPEAT;
 }
 
-bool WindowsInput::isMouseButtonPressedImpl(int button) {
+bool WindowsInput::isMouseButtonPressedImpl(MouseCode button) {
 	auto* window = static_cast<GLFWwindow*>(Application::getInstance().getWindow().getNativeWindow());
-	auto state = glfwGetMouseButton(window, button);
+	auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 	return state == GLFW_PRESS;
 }
 

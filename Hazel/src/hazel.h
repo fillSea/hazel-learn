@@ -7,7 +7,7 @@
 #include "hazel/core/KeyCodes.h"
 #include "hazel/core/Layer.h"
 #include "hazel/core/Log.h"
-#include "hazel/core/MouseButtonCodes.h"
+#include "hazel/core/MouseCodes.h"
 #include "hazel/core/Timestep.h"
 
 // ---Renderer------------------------
