@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -10,11 +11,13 @@
 #include "hazel/core/Log.h"
 
 namespace hazel {
+using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
+
 // 单次函数/代码段的性能采样结果，对应 Chrome Tracing 中的一条 trace event
 struct ProfileResult {
-	std::string name;           // 被采样对象的名称（函数名或自定义名称）
-	int64_t start;              // 采样开始时间（微秒，自 Unix 纪元起）
-	int64_t end;                // 采样结束时间（微秒，自 Unix 纪元起）
+	std::string name;  // 被采样对象的名称（函数名或自定义名称）
+	FloatingPointMicroseconds start;
+	std::chrono::microseconds elapsed_time;
 	std::thread::id thread_id;  // 执行该代码段的线程 ID（std::thread::id 的哈希值）
 };
 
@@ -81,14 +84,15 @@ public:
 		std::string name = result.name;
 		std::replace(name.begin(), name.end(), '"', '\'');
 
+		json << std::setprecision(3) << std::fixed;
 		json << "{";
 		json << R"("cat":"function",)";
-		json << "\"dur\":" << (result.end - result.start) << ',';
+		json << "\"dur\":" << (result.elapsed_time.count()) << ',';
 		json << R"("name":")" << name << "\",";
 		json << R"("ph":"X",)";
 		json << "\"pid\":0,";
 		json << "\"tid\":" << result.thread_id << ",";
-		json << "\"ts\":" << result.start;
+		json << "\"ts\":" << result.start.count();
 		json << "}";
 
 		std::lock_guard lock(mutex_);
@@ -130,7 +134,7 @@ class InstrumentationTimer {
 public:
 	// 以采样名称构造并开始计时
 	explicit InstrumentationTimer(const char* name) : name_(name) {
-		start_timepoint_ = std::chrono::high_resolution_clock::now();
+		start_timepoint_ = std::chrono::steady_clock::now();
 	}
 
 	// 若尚未停止则自动调用 stop(),确保作用域退出时一定完成采样
@@ -147,14 +151,14 @@ public:
 
 	// 停止计时并提交采样结果(幂等:重复调用会被 stopped_ 标志拦截)
 	void stop() {
-		auto end_timepoint = std::chrono::high_resolution_clock::now();
-
-		int64_t start =
-		    std::chrono::time_point_cast<std::chrono::microseconds>(start_timepoint_).time_since_epoch().count();
-		int64_t end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
+		auto end_timepoint = std::chrono::steady_clock::now();
+		auto high_res_start = FloatingPointMicroseconds{start_timepoint_.time_since_epoch()};
+		auto elapsed_time =
+		    std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch() -
+		    std::chrono::time_point_cast<std::chrono::microseconds>(start_timepoint_).time_since_epoch();
 
 		uint32_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
-		Instrumentor::getInstance().writeProfile({name_, start, end, std::this_thread::get_id()});
+		Instrumentor::getInstance().writeProfile({name_, high_res_start, elapsed_time, std::this_thread::get_id()});
 
 		stopped_ = true;
 	}
