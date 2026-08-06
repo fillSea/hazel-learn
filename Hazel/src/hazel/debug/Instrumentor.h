@@ -3,16 +3,19 @@
 #include <algorithm>
 #include <chrono>
 #include <fstream>
+#include <mutex>
 #include <string>
 #include <thread>
+
+#include "hazel/core/Log.h"
 
 namespace hazel {
 // 单次函数/代码段的性能采样结果，对应 Chrome Tracing 中的一条 trace event
 struct ProfileResult {
-	std::string name;    // 被采样对象的名称（函数名或自定义名称）
-	int64_t start;       // 采样开始时间（微秒，自 Unix 纪元起）
-	int64_t end;         // 采样结束时间（微秒，自 Unix 纪元起）
-	uint32_t thread_id;  // 执行该代码段的线程 ID（std::thread::id 的哈希值）
+	std::string name;           // 被采样对象的名称（函数名或自定义名称）
+	int64_t start;              // 采样开始时间（微秒，自 Unix 纪元起）
+	int64_t end;                // 采样结束时间（微秒，自 Unix 纪元起）
+	std::thread::id thread_id;  // 执行该代码段的线程 ID（std::thread::id 的哈希值）
 };
 
 // 一次性能分析会话，对应输出 JSON 文件中的一次会话
@@ -24,55 +27,80 @@ struct InstrumentationSession {
 // 以 Chrome Tracing 的 JSON 格式写入文件(可直接在 chrome://tracing 中查看)
 class Instrumentor {
 private:
+	std::mutex mutex_;
+
 	InstrumentationSession* current_session_{};  // 当前进行中的会话(无会话时为 nullptr)
 	std::ofstream output_stream_;                // 结果输出文件流
-	int profile_count_{};                        // 已写入的采样条数,用于 JSON 数组元素间的逗号分隔
 
 public:
 	Instrumentor() = default;
 
+	static Instrumentor& getInstance() {
+		static Instrumentor s_instance;
+		return s_instance;
+	}
+
 	// 开启分析会话:创建/覆盖输出文件、写入 JSON 头部并创建会话对象
 	void beginSession(const std::string& name, const std::string& filepath = "results.json") {
+		std::lock_guard lock(mutex_);
+		if (current_session_) {
+			// If there is already a current session, then close it before beginning new one.
+			// Subsequent profiling output meant for the original session will end up in the
+			// newly opened session instead.  That's better than having badly formatted
+			// profiling output.
+			if (Log::getCoreLogger()) {  // Edge case: BeginSession() might be before Log::Init()
+				HZ_CORE_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name,
+				              current_session_->name);
+			}
+			endSession();
+		}
+
 		output_stream_.open(filepath);
-		writeHeader();
-		current_session_ = new InstrumentationSession{name};
+
+		if (output_stream_.is_open()) {
+			current_session_ = new InstrumentationSession({name});
+			writeHeader();
+		} else {
+			if (Log::getCoreLogger()) {  // Edge case: BeginSession() might be before Log::Init()
+				HZ_CORE_ERROR("Instrumentor could not open results file '{0}'.", filepath);
+			}
+		}
 	}
 
 	// 结束当前会话:写入 JSON 尾部、关闭文件并释放会话内存,重置计数器
 	void endSession() {
-		writeFooter();
-		output_stream_.close();
-		delete current_session_;
-		current_session_ = nullptr;
-		profile_count_ = 0;
+		std::lock_guard lock(mutex_);
+		internalEndSession();
 	}
 
 	// 将一条采样结果序列化为 trace event 追加写入文件
 	// (名称中的双引号会被替换为单引号以保证 JSON 合法性)
 	void writeProfile(const ProfileResult& result) {
-		if (profile_count_++ > 0) {
-			output_stream_ << ",";
-		}
+		std::stringstream json;
 
 		std::string name = result.name;
 		std::replace(name.begin(), name.end(), '"', '\'');
 
-		output_stream_ << "{";
-		output_stream_ << R"("cat":"function",)";
-		output_stream_ << "\"dur\":" << (result.end - result.start) << ',';
-		output_stream_ << R"("name":")" << name << "\",";
-		output_stream_ << R"("ph":"X",)";
-		output_stream_ << "\"pid\":0,";
-		output_stream_ << "\"tid\":" << result.thread_id << ",";
-		output_stream_ << "\"ts\":" << result.start;
-		output_stream_ << "}";
+		json << "{";
+		json << R"("cat":"function",)";
+		json << "\"dur\":" << (result.end - result.start) << ',';
+		json << R"("name":")" << name << "\",";
+		json << R"("ph":"X",)";
+		json << "\"pid\":0,";
+		json << "\"tid\":" << result.thread_id << ",";
+		json << "\"ts\":" << result.start;
+		json << "}";
 
-		output_stream_.flush();
+		std::lock_guard lock(mutex_);
+		if (current_session_) {
+			output_stream_ << json.str();
+			output_stream_.flush();
+		}
 	}
 
 	// 写入 JSON 头部:traceEvents 数组开始
 	void writeHeader() {
-		output_stream_ << R"({"otherData": {},"traceEvents":[)";
+		output_stream_ << R"({"otherData": {},"traceEvents":[{})";
 		output_stream_.flush();
 	}
 
@@ -82,10 +110,15 @@ public:
 		output_stream_.flush();
 	}
 
-	// 获取全局唯一实例
-	static Instrumentor& get() {
-		static Instrumentor s_instance;
-		return s_instance;
+	// Note: you must already own lock on m_Mutex before
+	// calling InternalEndSession()
+	void internalEndSession() {
+		if (current_session_) {
+			writeFooter();
+			output_stream_.close();
+			delete current_session_;
+			current_session_ = nullptr;
+		}
 	}
 };
 
@@ -121,22 +154,22 @@ public:
 		int64_t end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
 
 		uint32_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());
-		Instrumentor::get().writeProfile({name_, start, end, thread_id});
+		Instrumentor::getInstance().writeProfile({name_, start, end, std::this_thread::get_id()});
 
 		stopped_ = true;
 	}
 
 private:
-	const char* name_;                                                                   // 采样名称(通常为函数名或自定义标识)
-	std::chrono::time_point<std::chrono::high_resolution_clock> start_timepoint_;        // 计时起点
-	bool stopped_{};                                                                     // 是否已停止采样
+	const char* name_;                                                             // 采样名称(通常为函数名或自定义标识)
+	std::chrono::time_point<std::chrono::high_resolution_clock> start_timepoint_;  // 计时起点
+	bool stopped_{};                                                               // 是否已停止采样
 };
 }  // namespace hazel
 
 #define HZ_PROFILE 1
 #if HZ_PROFILE
-#define HZ_PROFILE_BEGIN_SESSION(name, filepath) ::hazel::Instrumentor::get().beginSession(name, filepath)
-#define HZ_PROFILE_END_SESSION() ::hazel::Instrumentor::get().endSession()
+#define HZ_PROFILE_BEGIN_SESSION(name, filepath) ::hazel::Instrumentor::getInstance().beginSession(name, filepath)
+#define HZ_PROFILE_END_SESSION() ::hazel::Instrumentor::getInstance().endSession()
 #define HZ_PROFILE_SCOPE(name) ::hazel::InstrumentationTimer timer##__LINE__(name);
 #define HZ_PROFILE_FUNCTION() HZ_PROFILE_SCOPE(__FUNCSIG__)
 #else
