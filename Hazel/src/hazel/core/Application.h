@@ -6,6 +6,8 @@
 #include "hazel/core/Window.h"
 #include "hazel/events/ApplicationEvent.h"
 
+int main(int argc, char** argv);
+
 namespace hazel {
 class VertexBuffer;
 class IndexBuffer;
@@ -21,8 +23,6 @@ public:
 	Application(Application&&) = delete;
 	Application& operator=(Application&&) = delete;
 
-	void run();
-
 	void onEvent(Event& e);
 
 	void pushLayer(Layer* layer);
@@ -33,10 +33,13 @@ public:
 	inline static Application& getInstance() { return *instance_; }
 
 private:
+	void run();
 	bool onWindowClose(WindowCloseEvent& e);
 	bool onWindowResize(WindowResizeEvent& e);
 
 private:
+	friend int ::main(int argc, char** argv);
+
 	static Application* instance_;
 
 	std::unique_ptr<Window> window_;
