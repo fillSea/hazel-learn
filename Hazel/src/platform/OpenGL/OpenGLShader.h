@@ -26,6 +26,7 @@ public:
 	[[nodiscard]] const std::string& getName() const override { return name_; }
 
 	void setInt(const std::string& name, int value) override;
+	void setFloat(const std::string& name, float value) override;
 	void setFloat3(const std::string& name, const glm::vec3& value) override;
 	void setFloat4(const std::string& name, const glm::vec4& value) override;
 	void setMat4(const std::string& name, const glm::mat4& value) override;
