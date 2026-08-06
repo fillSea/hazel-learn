@@ -18,10 +18,6 @@ static void onGLFWError(int error, const char* description) {
 	HZ_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 }
 
-Window* Window::create(const WindowProps& props) {
-	return new WindowsWindow(props);
-}
-
 WindowsWindow::WindowsWindow(const WindowProps& props) {
 	HZ_PROFILE_FUNCTION();
 

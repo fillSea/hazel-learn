@@ -13,6 +13,8 @@ public:
 	inline static float getMouseX() { return instance_->getMouseXImpl(); }
 	inline static float getMouseY() { return instance_->getMouseYImpl(); }
 
+	static Scope<Input> create();
+
 protected:
 	virtual bool isKeyPressedImpl(KeyCode key) = 0;
 

@@ -23,7 +23,7 @@ class HAZEL_API Window {
 public:
 	using EventCallbackFn = std::function<void(Event&)>;
 
-	virtual ~Window() {}
+	virtual ~Window() = default;
 
 	virtual void onUpdate() = 0;
 
@@ -42,6 +42,6 @@ public:
 	virtual void* getNativeWindow() const = 0;
 
 	// 创建窗口
-	static Window* create(const WindowProps& props = WindowProps());
+	static Scope<Window> create(const WindowProps& props = WindowProps());
 };
 }  // namespace hazel

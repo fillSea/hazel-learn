@@ -71,6 +71,8 @@ set(HAZEL_SOURCES
     Hazel/src/hazel/core/Layer.cpp
     Hazel/src/hazel/core/LayerStack.cpp
     Hazel/src/hazel/core/Log.cpp
+    Hazel/src/hazel/core/Input.cpp
+    Hazel/src/hazel/core/Window.cpp
     
     #renderer
     Hazel/src/hazel/renderer/Shader.cpp
