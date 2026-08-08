@@ -174,6 +174,10 @@ void OpenGLShader::setInt(const std::string& name, int value) {
 	uploadUniformInt(name, value);
 }
 
+void OpenGLShader::setIntArray(const std::string& name, int* values, uint32_t count) {
+	uploadUniformIntArray(name, values, count);
+}
+
 void OpenGLShader::setFloat(const std::string& name, float value) {
 	HZ_PROFILE_FUNCTION();
 
@@ -201,6 +205,11 @@ void OpenGLShader::setMat4(const std::string& name, const glm::mat4& value) {
 void OpenGLShader::uploadUniformInt(const std::string& name, int value) const {
 	GLint location = glGetUniformLocation(renderer_id_, name.c_str());
 	glUniform1i(location, value);
+}
+
+void OpenGLShader::uploadUniformIntArray(const std::string& name, int* values, uint32_t count) const {
+	GLint location = glGetUniformLocation(renderer_id_, name.c_str());
+	glUniform1iv(location, count, values);
 }
 
 void OpenGLShader::uploadUniformFloat(const std::string& name, float value) const {

@@ -24,6 +24,10 @@ public:
 
 	void bind(uint32_t slot = 0) const override;
 
+	bool operator==(const Texture& other) const override {
+		return renderer_id_ == (dynamic_cast<const OpenGLTexture2D&>(other)).renderer_id_;
+	}
+
 private:
 	std::string path_;        ///< 纹理图片文件路径（以宽高创建时为空）
 	uint32_t width_;          ///< 纹理宽度（像素）

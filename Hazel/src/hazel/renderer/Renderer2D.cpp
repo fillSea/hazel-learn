@@ -13,7 +13,8 @@ struct QuadVertex {
 	glm::vec3 position;   /// 位置
 	glm::vec4 color;      /// 颜色
 	glm::vec2 tex_coord;  /// 纹理坐标
-	                      // TODO: texid
+	float tex_index;      /// 纹理索引
+	float tiling_factor;  /// 纹理平铺因子
 };
 
 /// @brief 2D 渲染器内部存储结构
@@ -24,6 +25,8 @@ struct Renderer2DData {
 	const uint32_t k_max_vertices = k_max_quads * 4;
 	/// 最大索引数量
 	const uint32_t k_max_indices = k_max_quads * 6;
+	/// 最大纹理槽数量
+	static const uint32_t k_max_texture_slots = 32;  // TODO: RenderCaps
 
 	/// @brief 四边形顶点数组对象
 	Ref<VertexArray> quad_vertex_array;
@@ -40,6 +43,11 @@ struct Renderer2DData {
 	QuadVertex* quad_vertex_buffer_base = nullptr;
 	/// @brief 顶点缓冲数据指针，用于批量绘制
 	QuadVertex* quad_vertex_buffer_ptr = nullptr;
+
+	/// @brief 纹理槽数组，用于存储当前绑定的纹理
+	std::array<Ref<Texture2D>, k_max_texture_slots> Texture_slots;
+	/// @brief 当前纹理槽索引，0 号槽为白色纹理
+	uint32_t texture_slot_index = 1;  // 0 = white texture
 };
 
 static Renderer2DData g_s_data;
@@ -52,7 +60,9 @@ void Renderer2D::init() {
 	g_s_data.quad_vertex_buffer = VertexBuffer::create(g_s_data.k_max_vertices * sizeof(QuadVertex));
 	g_s_data.quad_vertex_buffer->setLayout({{ShaderDataType::Float3, "a_Position"},
 	                                        {ShaderDataType::Float4, "a_Color"},
-	                                        {ShaderDataType::Float2, "a_TexCoord"}});
+	                                        {ShaderDataType::Float2, "a_TexCoord"},
+	                                        {ShaderDataType::Float, "a_TexIndex"},
+	                                        {ShaderDataType::Float, "a_TilingFactor"}});
 	g_s_data.quad_vertex_array->addVertexBuffer(g_s_data.quad_vertex_buffer);
 
 	g_s_data.quad_vertex_buffer_base = new QuadVertex[g_s_data.k_max_vertices];
@@ -80,9 +90,17 @@ void Renderer2D::init() {
 	uint32_t white_texture_data = 0xffffffff;
 	g_s_data.white_texture->setData(&white_texture_data, sizeof(uint32_t));
 
+	int32_t samplers[g_s_data.k_max_texture_slots];
+	for (uint32_t i = 0; i < g_s_data.k_max_texture_slots; i++) {
+		samplers[i] = i;
+	}
+
 	g_s_data.texture_shader = Shader::create("assets/shaders/Texture.glsl");
 	g_s_data.texture_shader->bind();
-	g_s_data.texture_shader->setInt("u_Texture", 0);
+	g_s_data.texture_shader->setIntArray("u_Textures", samplers, g_s_data.k_max_texture_slots);
+
+	// Set all texture slots to 0
+	g_s_data.Texture_slots[0] = g_s_data.white_texture;
 }
 
 void Renderer2D::shutdown() {
@@ -97,6 +115,7 @@ void Renderer2D::beginScene(const OrthographicCamera& camera) {
 
 	g_s_data.quad_index_count = 0;
 	g_s_data.quad_vertex_buffer_ptr = g_s_data.quad_vertex_buffer_base;
+	g_s_data.texture_slot_index = 1;
 }
 
 void Renderer2D::endScene() {
@@ -110,6 +129,11 @@ void Renderer2D::endScene() {
 }
 
 void Renderer2D::flush() {
+	// Bind textures
+	for (uint32_t i = 0; i < g_s_data.texture_slot_index; i++) {
+		g_s_data.Texture_slots[i]->bind(i);
+	}
+
 	RenderCommand::drawIndexed(g_s_data.quad_vertex_array, g_s_data.quad_index_count);
 }
 
@@ -120,24 +144,35 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
+	const float k_tex_index = 0.0f;  // White Texture
+	const float k_tiling_factor = 1.0f;
+
 	g_s_data.quad_vertex_buffer_ptr->position = position;
 	g_s_data.quad_vertex_buffer_ptr->color = color;
 	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = k_tex_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y, 0.0f};
 	g_s_data.quad_vertex_buffer_ptr->color = color;
 	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = k_tex_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y + size.y, 0.0f};
 	g_s_data.quad_vertex_buffer_ptr->color = color;
 	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = k_tex_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_vertex_buffer_ptr->position = {position.x, position.y + size.y, 0.0f};
 	g_s_data.quad_vertex_buffer_ptr->color = color;
 	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = k_tex_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_index_count += 6;
@@ -161,6 +196,53 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
                           float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
+	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	float texture_index = 0.0f;
+	for (uint32_t i = 1; i < g_s_data.texture_slot_index; i++) {
+		if (*g_s_data.Texture_slots[i] == *texture.get()) {
+			texture_index = static_cast<float>(i);
+			break;
+		}
+	}
+
+	if (texture_index == 0.0f) {
+		texture_index = static_cast<float>(g_s_data.texture_slot_index);
+		g_s_data.Texture_slots[g_s_data.texture_slot_index] = texture;
+		g_s_data.texture_slot_index++;
+	}
+
+	g_s_data.quad_vertex_buffer_ptr->position = position;
+	g_s_data.quad_vertex_buffer_ptr->color = k_color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = k_color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y + size.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = k_color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x, position.y + size.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = k_color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_index_count += 6;
+
+#if OLD_PATH
 	g_s_data.texture_shader->setFloat4("u_Color", tint_color);
 	g_s_data.texture_shader->setFloat("u_TilingFactor", tiling_factor);
 	texture->bind();
@@ -171,6 +253,7 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 
 	g_s_data.quad_vertex_array->bind();
 	RenderCommand::drawIndexed(g_s_data.quad_vertex_array);
+#endif
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation,

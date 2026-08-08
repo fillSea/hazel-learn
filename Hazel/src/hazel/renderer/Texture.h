@@ -34,6 +34,8 @@ public:
 	/// @brief 将纹理绑定到指定纹理槽
 	/// @param slot 纹理槽索引，默认为 0
 	virtual void bind(uint32_t slot = 0) const = 0;
+
+	virtual bool operator==(const Texture& other) const = 0;
 };
 
 /**
