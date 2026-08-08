@@ -28,6 +28,9 @@ public:
 	/// @brief 结束当前场景的渲染。
 	static void endScene();
 
+	/// @brief 提交渲染命令，将缓冲区中的图元绘制到屏幕上。
+	static void flush();
+
 	// 图元绘制
 
 	/// @brief 绘制一个纯色四边形（2D 位置重载）。

@@ -170,7 +170,7 @@ private:
 };
 }  // namespace hazel
 
-#define HZ_PROFILE 1
+#define HZ_PROFILE 0
 #if HZ_PROFILE
 #define HZ_PROFILE_BEGIN_SESSION(name, filepath) ::hazel::Instrumentor::getInstance().beginSession(name, filepath)
 #define HZ_PROFILE_END_SESSION() ::hazel::Instrumentor::getInstance().endSession()

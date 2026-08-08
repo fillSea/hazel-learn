@@ -29,9 +29,10 @@ public:
 	/**
 	 * @brief 按索引绘制顶点数组
 	 * @param vertex_array 包含顶点缓冲与索引缓冲的顶点数组对象
+	 * @param count 要绘制的索引数量，0 表示绘制所有索引
 	 */
-	inline static void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) {
-		s_renderer_api_->drawIndexed(vertex_array);
+	inline static void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array, uint32_t count = 0) {
+		s_renderer_api_->drawIndexed(vertex_array, count);
 	}
 
 	inline static void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {

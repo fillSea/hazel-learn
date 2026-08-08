@@ -8,57 +8,109 @@
 
 namespace hazel {
 
-struct Renderer2DStorage {
-	Ref<VertexArray> quad_vertex_array;
-	Ref<Shader> texture_shader;
-	Ref<Texture2D> white_texture;
+/// @brief 四边形顶点数据结构
+struct QuadVertex {
+	glm::vec3 position;   /// 位置
+	glm::vec4 color;      /// 颜色
+	glm::vec2 tex_coord;  /// 纹理坐标
+	                      // TODO: texid
 };
 
-static Renderer2DStorage* g_s_data;
+/// @brief 2D 渲染器内部存储结构
+struct Renderer2DData {
+	/// 最大绘制图元数量
+	const uint32_t k_max_quads = 10000;
+	/// 最大顶点数量
+	const uint32_t k_max_vertices = k_max_quads * 4;
+	/// 最大索引数量
+	const uint32_t k_max_indices = k_max_quads * 6;
+
+	/// @brief 四边形顶点数组对象
+	Ref<VertexArray> quad_vertex_array;
+	/// @brief 四边形顶点缓冲对象
+	Ref<VertexBuffer> quad_vertex_buffer;
+	/// @brief 四边形着色器
+	Ref<Shader> texture_shader;
+	/// @brief 白色纹理，用于绘制纯色四边形
+	Ref<Texture2D> white_texture;
+
+	/// @brief 当前绘制的索引数量
+	uint32_t quad_index_count = 0;
+	/// @brief 顶点缓冲数据指针，用于批量绘制, 基准指针
+	QuadVertex* quad_vertex_buffer_base = nullptr;
+	/// @brief 顶点缓冲数据指针，用于批量绘制
+	QuadVertex* quad_vertex_buffer_ptr = nullptr;
+};
+
+static Renderer2DData g_s_data;
 
 void Renderer2D::init() {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data = new Renderer2DStorage();
-	g_s_data->quad_vertex_array = VertexArray::create();
+	g_s_data.quad_vertex_array = VertexArray::create();
 
-	float square_vertices[5 * 4] = {-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
-	                                0.5f,  0.5f,  0.0f, 1.0f, 1.0f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f};
+	g_s_data.quad_vertex_buffer = VertexBuffer::create(g_s_data.k_max_vertices * sizeof(QuadVertex));
+	g_s_data.quad_vertex_buffer->setLayout({{ShaderDataType::Float3, "a_Position"},
+	                                        {ShaderDataType::Float4, "a_Color"},
+	                                        {ShaderDataType::Float2, "a_TexCoord"}});
+	g_s_data.quad_vertex_array->addVertexBuffer(g_s_data.quad_vertex_buffer);
 
-	Ref<VertexBuffer> square_vb;
-	square_vb.reset(VertexBuffer::create(square_vertices, sizeof(square_vertices)));
-	square_vb->setLayout({{ShaderDataType::Float3, "a_Position"}, {ShaderDataType::Float2, "a_TexCoord"}});
-	g_s_data->quad_vertex_array->addVertexBuffer(square_vb);
+	g_s_data.quad_vertex_buffer_base = new QuadVertex[g_s_data.k_max_vertices];
 
-	uint32_t square_indices[6] = {0, 1, 2, 2, 3, 0};
-	Ref<IndexBuffer> square_ib;
-	square_ib.reset(IndexBuffer::create(square_indices, sizeof(square_indices) / sizeof(uint32_t)));
-	g_s_data->quad_vertex_array->setIndexBuffer(square_ib);
+	uint32_t* quad_indices = new uint32_t[g_s_data.k_max_indices];
 
-	g_s_data->white_texture = Texture2D::create(1, 1);
+	uint32_t offset = 0;
+	for (uint32_t i = 0; i < g_s_data.k_max_indices; i += 6) {
+		quad_indices[i + 0] = offset + 0;
+		quad_indices[i + 1] = offset + 1;
+		quad_indices[i + 2] = offset + 2;
+
+		quad_indices[i + 3] = offset + 2;
+		quad_indices[i + 4] = offset + 3;
+		quad_indices[i + 5] = offset + 0;
+
+		offset += 4;
+	}
+
+	Ref<IndexBuffer> quad_ib{IndexBuffer::create(quad_indices, g_s_data.k_max_indices)};
+	g_s_data.quad_vertex_array->setIndexBuffer(quad_ib);
+	delete[] quad_indices;
+
+	g_s_data.white_texture = Texture2D::create(1, 1);
 	uint32_t white_texture_data = 0xffffffff;
-	g_s_data->white_texture->setData(&white_texture_data, sizeof(uint32_t));
+	g_s_data.white_texture->setData(&white_texture_data, sizeof(uint32_t));
 
-	g_s_data->texture_shader = Shader::create("assets/shaders/Texture.glsl");
-	g_s_data->texture_shader->bind();
-	g_s_data->texture_shader->setInt("u_Texture", 0);
+	g_s_data.texture_shader = Shader::create("assets/shaders/Texture.glsl");
+	g_s_data.texture_shader->bind();
+	g_s_data.texture_shader->setInt("u_Texture", 0);
 }
 
 void Renderer2D::shutdown() {
 	HZ_PROFILE_FUNCTION();
-
-	delete g_s_data;
 }
 
 void Renderer2D::beginScene(const OrthographicCamera& camera) {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data->texture_shader->bind();
-	g_s_data->texture_shader->setMat4("u_ViewProjection", camera.getViewProjectionMatrix());
+	g_s_data.texture_shader->bind();
+	g_s_data.texture_shader->setMat4("u_ViewProjection", camera.getViewProjectionMatrix());
+
+	g_s_data.quad_index_count = 0;
+	g_s_data.quad_vertex_buffer_ptr = g_s_data.quad_vertex_buffer_base;
 }
 
 void Renderer2D::endScene() {
 	HZ_PROFILE_FUNCTION();
+
+	uint32_t data_size = reinterpret_cast<uint8_t*>(g_s_data.quad_vertex_buffer_ptr) -
+	                     reinterpret_cast<uint8_t*>(g_s_data.quad_vertex_buffer_base);
+	g_s_data.quad_vertex_buffer->setData(g_s_data.quad_vertex_buffer_base, data_size);
+
+	flush();
+}
+
+void Renderer2D::flush() {
+	RenderCommand::drawIndexed(g_s_data.quad_vertex_array, g_s_data.quad_index_count);
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color) {
@@ -68,16 +120,36 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data->texture_shader->setFloat4("u_Color", color);
-	g_s_data->texture_shader->setFloat("u_TilingFactor", 1.0f);
-	g_s_data->white_texture->bind();
+	g_s_data.quad_vertex_buffer_ptr->position = position;
+	g_s_data.quad_vertex_buffer_ptr->color = color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr++;
 
-	glm::mat4 transform =
-	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-	g_s_data->texture_shader->setMat4("u_Transform", transform);
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr++;
 
-	g_s_data->quad_vertex_array->bind();
-	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x + size.x, position.y + size.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_vertex_buffer_ptr->position = {position.x, position.y + size.y, 0.0f};
+	g_s_data.quad_vertex_buffer_ptr->color = color;
+	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
+	g_s_data.quad_vertex_buffer_ptr++;
+
+	g_s_data.quad_index_count += 6;
+
+	// g_s_data.white_texture->bind();
+
+	// glm::mat4 transform =
+	//     glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+	// g_s_data.texture_shader->setMat4("u_Transform", transform);
+
+	// g_s_data.quad_vertex_array->bind();
+	// RenderCommand::drawIndexed(g_s_data.quad_vertex_array);
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture,
@@ -89,16 +161,16 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
                           float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data->texture_shader->setFloat4("u_Color", tint_color);
-	g_s_data->texture_shader->setFloat("u_TilingFactor", tiling_factor);
+	g_s_data.texture_shader->setFloat4("u_Color", tint_color);
+	g_s_data.texture_shader->setFloat("u_TilingFactor", tiling_factor);
 	texture->bind();
 
 	glm::mat4 transform =
 	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-	g_s_data->texture_shader->setMat4("u_Transform", transform);
+	g_s_data.texture_shader->setMat4("u_Transform", transform);
 
-	g_s_data->quad_vertex_array->bind();
-	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
+	g_s_data.quad_vertex_array->bind();
+	RenderCommand::drawIndexed(g_s_data.quad_vertex_array);
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation,
@@ -110,16 +182,16 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
                                  const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data->texture_shader->setFloat4("u_Color", color);
-	g_s_data->texture_shader->setFloat("u_TilingFactor", 1.0f);
-	g_s_data->white_texture->bind();
+	g_s_data.texture_shader->setFloat4("u_Color", color);
+	g_s_data.texture_shader->setFloat("u_TilingFactor", 1.0f);
+	g_s_data.white_texture->bind();
 
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
 	                      glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f}) *
 	                      glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-	g_s_data->texture_shader->setMat4("u_Transform", transform);
-	g_s_data->quad_vertex_array->bind();
-	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
+	g_s_data.texture_shader->setMat4("u_Transform", transform);
+	g_s_data.quad_vertex_array->bind();
+	RenderCommand::drawIndexed(g_s_data.quad_vertex_array);
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation,
@@ -131,17 +203,17 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
                                  const Ref<Texture2D>& texture, float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
-	g_s_data->texture_shader->setFloat4("u_Color", tint_color);
-	g_s_data->texture_shader->setFloat("u_TilingFactor", tiling_factor);
+	g_s_data.texture_shader->setFloat4("u_Color", tint_color);
+	g_s_data.texture_shader->setFloat("u_TilingFactor", tiling_factor);
 	texture->bind();
 
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
 	                      glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f}) *
 	                      glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
-	g_s_data->texture_shader->setMat4("u_Transform", transform);
+	g_s_data.texture_shader->setMat4("u_Transform", transform);
 
-	g_s_data->quad_vertex_array->bind();
-	RenderCommand::drawIndexed(g_s_data->quad_vertex_array);
+	g_s_data.quad_vertex_array->bind();
+	RenderCommand::drawIndexed(g_s_data.quad_vertex_array);
 }
 
 }  // namespace hazel

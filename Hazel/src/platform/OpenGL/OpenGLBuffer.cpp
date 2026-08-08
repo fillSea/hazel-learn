@@ -5,6 +5,14 @@
 namespace hazel {
 
 //---------------------------------------- VertexBuffer ----------------------------------------
+OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size) {
+	HZ_PROFILE_FUNCTION();
+
+	glCreateBuffers(1, &renderer_id_);
+	glBindBuffer(GL_ARRAY_BUFFER, renderer_id_);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+}
+
 OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size) {
 	HZ_PROFILE_FUNCTION();
 
@@ -29,6 +37,11 @@ void OpenGLVertexBuffer::unBind() const {
 	HZ_PROFILE_FUNCTION();
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void OpenGLVertexBuffer::setData(const void* data, uint32_t size) {
+	glBindBuffer(GL_ARRAY_BUFFER, renderer_id_);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 
 //---------------------------------------- IndexBuffer ----------------------------------------

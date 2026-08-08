@@ -162,13 +162,23 @@ private:
  */
 class HAZEL_API VertexBuffer {
 public:
+	/// @brief 默认构造函数
 	VertexBuffer() = default;
+
+	/// @brief 虚析构函数，保证子类正确释放
 	virtual ~VertexBuffer() = default;
 
 	VertexBuffer(const VertexBuffer&) = delete;
 	VertexBuffer& operator=(const VertexBuffer&) = delete;
 	VertexBuffer(VertexBuffer&&) = delete;
 	VertexBuffer& operator=(VertexBuffer&&) = delete;
+
+	/**
+	 * @brief 工厂方法：根据当前图形 API 创建指定大小的 VertexBuffer 实例
+	 * @param size 缓冲区大小（字节数）
+	 * @return 新创建的 VertexBuffer 智能指针
+	 */
+	static Ref<VertexBuffer> create(uint32_t size);
 
 	/**
 	 * @brief 工厂方法：根据当前图形 API 创建对应的 VertexBuffer 实例
@@ -187,6 +197,13 @@ public:
 	 * @brief 解绑当前顶点缓冲
 	 */
 	virtual void unBind() const = 0;
+
+	/**
+	 * @brief 将数据上传到顶点缓冲（动态缓冲）
+	 * @param data 指向要上传数据的指针
+	 * @param size 数据总字节数
+	 */
+	virtual void setData(const void* data, uint32_t size) = 0;
 
 	/**
 	 * @brief 获取顶点缓冲的布局描述
@@ -224,7 +241,7 @@ public:
 	 * @param size 数据总字节数
 	 * @return 新创建的 IndexBuffer 指针
 	 */
-	static IndexBuffer* create(uint32_t* indices, uint32_t size);
+	static IndexBuffer* create(uint32_t* indices, uint32_t count);
 
 	/**
 	 * @brief 绑定当前索引缓冲到图形管线

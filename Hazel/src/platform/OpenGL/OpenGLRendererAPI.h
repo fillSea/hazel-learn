@@ -27,8 +27,9 @@ public:
 	/**
 	 * @brief 使用 OpenGL 按索引缓冲绘制顶点数组
 	 * @param vertex_array 包含顶点缓冲与索引缓冲的顶点数组对象
+	 * @param index_count 要绘制的索引数量，0 表示绘制所有索引
 	 */
-	void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) override;
+	void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array, uint32_t index_count = 0) override;
 
 	void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 };

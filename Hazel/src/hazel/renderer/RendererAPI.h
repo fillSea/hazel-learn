@@ -37,8 +37,9 @@ public:
 	/**
 	 * @brief 按索引缓冲绘制顶点数组
 	 * @param vertex_array 包含顶点缓冲与索引缓冲的顶点数组对象
+	 * @param indexCount 要绘制的索引数量，0 表示绘制所有索引
 	 */
-	virtual void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array) = 0;
+	virtual void drawIndexed(const std::shared_ptr<VertexArray>& vertex_array, uint32_t index_count = 0) = 0;
 
 	/**
 	 * @brief 获取当前正在使用的图形 API 类型

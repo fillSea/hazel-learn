@@ -5,6 +5,19 @@
 
 namespace hazel {
 
+Ref<VertexBuffer> VertexBuffer::create(uint32_t size) {
+	switch (Renderer::getAPI()) {
+		case RendererAPI::API::None:
+			HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!");
+			return nullptr;
+		case RendererAPI::API::OpenGL:
+			return createRef<OpenGLVertexBuffer>(size);
+	}
+
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
+	return nullptr;
+}
+
 VertexBuffer* VertexBuffer::create(float* vertices, uint32_t size) {
 	switch (Renderer::getAPI()) {
 		case RendererAPI::API::None:
