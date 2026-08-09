@@ -116,6 +116,8 @@ void Renderer2D::init() {
 
 void Renderer2D::shutdown() {
 	HZ_PROFILE_FUNCTION();
+
+	delete[] g_s_data.quad_vertex_buffer_base;
 }
 
 void Renderer2D::beginScene(const OrthographicCamera& camera) {
@@ -202,7 +204,6 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	HZ_PROFILE_FUNCTION();
 
 	constexpr size_t k_quad_vertex_count = 4;
-	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
 
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
@@ -232,7 +233,7 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 
 	for (size_t i = 0; i < k_quad_vertex_count; i++) {
 		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
-		g_s_data.quad_vertex_buffer_ptr->color = k_color;
+		g_s_data.quad_vertex_buffer_ptr->color = tint_color;
 		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
 		g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
 		g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
@@ -290,7 +291,6 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	HZ_PROFILE_FUNCTION();
 
 	constexpr size_t k_quad_vertex_count = 4;
-	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
 
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
@@ -321,7 +321,7 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 
 	for (size_t i = 0; i < k_quad_vertex_count; i++) {
 		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
-		g_s_data.quad_vertex_buffer_ptr->color = k_color;
+		g_s_data.quad_vertex_buffer_ptr->color = tint_color;
 		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
 		g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
 		g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
