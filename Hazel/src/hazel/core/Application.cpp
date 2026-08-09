@@ -57,11 +57,11 @@ void Application::onEvent(Event& e) {
 
 	// 从后往前遍历，先处理上层的事件
 	for (auto it = layer_stack_.end(); it != layer_stack_.begin();) {
-		(*--it)->onEvent(e);
 		// 如果事件被处理，就跳出循环
 		if (e.isHandled()) {
 			break;
 		}
+		(*--it)->onEvent(e);
 	}
 }
 

@@ -6,6 +6,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "hazel/core/Application.h"
+#include "hazel/events/Event.h"
 #include "imgui.h"
 
 namespace hazel {
@@ -53,6 +54,12 @@ void ImGuiLayer::onDetach() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+}
+
+void ImGuiLayer::onEvent(Event& e) {
+	ImGuiIO& io = ImGui::GetIO();
+	e.setHandled(e.isHandled() | e.isInCategory(EventCategoryMouse) & io.WantCaptureMouse);
+	e.setHandled(e.isHandled() | e.isInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard);
 }
 
 void ImGuiLayer::begin() {

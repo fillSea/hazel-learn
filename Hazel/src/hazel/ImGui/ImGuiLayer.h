@@ -16,6 +16,7 @@ public:
 	void onAttach() override;
 	void onDetach() override;
 	void onImGuiRender() override;
+	void onEvent(Event& e) override;
 
 	void begin();
 	void end();
