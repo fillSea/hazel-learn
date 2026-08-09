@@ -166,43 +166,26 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
+	constexpr size_t k_quad_vertex_count = 4;
+	const float k_texture_index = 0.0f;  // White Texture
+	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+	const float k_tiling_factor = 1.0f;
+
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
 		flushAndReset();
 	}
 
-	const float k_texture_index = 0.0f;  // White Texture
-	const float k_tiling_factor = 1.0f;
-
 	glm::mat4 transform =
 	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[0];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[1];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[2];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[3];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
+	for (size_t i = 0; i < k_quad_vertex_count; i++) {
+		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
+		g_s_data.quad_vertex_buffer_ptr->color = color;
+		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
+		g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
+		g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
+		g_s_data.quad_vertex_buffer_ptr++;
+	}
 
 	g_s_data.quad_index_count += 6;
 
@@ -218,11 +201,13 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
                           float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
+	constexpr size_t k_quad_vertex_count = 4;
+	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
+	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
 		flushAndReset();
 	}
-
-	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	float texture_index = 0.0f;
 	for (uint32_t i = 1; i < g_s_data.texture_slot_index; i++) {
@@ -241,33 +226,14 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	glm::mat4 transform =
 	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[0];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[1];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[2];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[3];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
+	for (size_t i = 0; i < k_quad_vertex_count; i++) {
+		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
+		g_s_data.quad_vertex_buffer_ptr->color = k_color;
+		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
+		g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+		g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+		g_s_data.quad_vertex_buffer_ptr++;
+	}
 
 	g_s_data.quad_index_count += 6;
 
@@ -283,44 +249,27 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
                                  const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
+	constexpr size_t k_quad_vertex_count = 4;
+	const float k_texture_index = 0.0f;  // White Texture
+	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+	const float k_tiling_factor = 1.0f;
+
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
 		flushAndReset();
 	}
-
-	const float k_texture_index = 0.0f;  // White Texture
-	const float k_tiling_factor = 1.0f;
 
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
 	                      glm::rotate(glm::mat4(1.0f), glm::radians(rotation), {0.0f, 0.0f, 1.0f}) *
 	                      glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[0];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[1];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[2];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[3];
-	g_s_data.quad_vertex_buffer_ptr->color = color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
+	for (size_t i = 0; i < k_quad_vertex_count; i++) {
+		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
+		g_s_data.quad_vertex_buffer_ptr->color = color;
+		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
+		g_s_data.quad_vertex_buffer_ptr->tex_index = k_texture_index;
+		g_s_data.quad_vertex_buffer_ptr->tiling_factor = k_tiling_factor;
+		g_s_data.quad_vertex_buffer_ptr++;
+	}
 
 	g_s_data.quad_index_count += 6;
 
@@ -336,11 +285,13 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
                                  const Ref<Texture2D>& texture, float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
+	constexpr size_t k_quad_vertex_count = 4;
+	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
+	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
 		flushAndReset();
 	}
-
-	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	float texture_index = 0.0f;
 	for (uint32_t i = 1; i < g_s_data.texture_slot_index; i++) {
@@ -360,33 +311,14 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	                      glm::rotate(glm::mat4(1.0f), glm::radians(rotation), {0.0f, 0.0f, 1.0f}) *
 	                      glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[0];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[1];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 0.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[2];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {1.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
-
-	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[3];
-	g_s_data.quad_vertex_buffer_ptr->color = k_color;
-	g_s_data.quad_vertex_buffer_ptr->tex_coord = {0.0f, 1.0f};
-	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
-	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
-	g_s_data.quad_vertex_buffer_ptr++;
+	for (size_t i = 0; i < k_quad_vertex_count; i++) {
+		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
+		g_s_data.quad_vertex_buffer_ptr->color = k_color;
+		g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
+		g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+		g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+		g_s_data.quad_vertex_buffer_ptr++;
+	}
 
 	g_s_data.quad_index_count += 6;
 
