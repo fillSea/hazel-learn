@@ -20,11 +20,11 @@ struct QuadVertex {
 /// @brief 2D 渲染器内部存储结构
 struct Renderer2DData {
 	/// 最大绘制图元数量
-	const uint32_t k_max_quads = 10000;
+	static const uint32_t k_max_quads = 20000;
 	/// 最大顶点数量
-	const uint32_t k_max_vertices = k_max_quads * 4;
+	static const uint32_t k_max_vertices = k_max_quads * 4;
 	/// 最大索引数量
-	const uint32_t k_max_indices = k_max_quads * 6;
+	static const uint32_t k_max_indices = k_max_quads * 6;
 	/// 最大纹理槽数量
 	static const uint32_t k_max_texture_slots = 32;  // TODO: RenderCaps
 
@@ -51,6 +51,9 @@ struct Renderer2DData {
 
 	/// @brief 四边形顶点位置数组，用于计算顶点坐标
 	glm::vec4 quad_vertex_positions[4];
+
+	/// @brief 渲染统计信息
+	Renderer2D::Statistics stats;
 };
 
 static Renderer2DData g_s_data;
@@ -143,6 +146,17 @@ void Renderer2D::flush() {
 	}
 
 	RenderCommand::drawIndexed(g_s_data.quad_vertex_array, g_s_data.quad_index_count);
+
+	g_s_data.stats.draw_calls++;
+}
+
+void Renderer2D::flushAndReset() {
+	endScene();
+
+	g_s_data.quad_index_count = 0;
+	g_s_data.quad_vertex_buffer_ptr = g_s_data.quad_vertex_buffer_base;
+
+	g_s_data.texture_slot_index = 1;
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color) {
@@ -151,6 +165,10 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
+
+	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
+		flushAndReset();
+	}
 
 	const float k_texture_index = 0.0f;  // White Texture
 	const float k_tiling_factor = 1.0f;
@@ -187,6 +205,8 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_index_count += 6;
+
+	g_s_data.stats.quad_count++;
 }
 
 void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture,
@@ -198,6 +218,10 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
                           float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
+	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
+		flushAndReset();
+	}
+
 	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	float texture_index = 0.0f;
@@ -246,6 +270,8 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_index_count += 6;
+
+	g_s_data.stats.quad_count++;
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation,
@@ -256,6 +282,10 @@ void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& siz
 void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation,
                                  const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
+
+	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
+		flushAndReset();
+	}
 
 	const float k_texture_index = 0.0f;  // White Texture
 	const float k_tiling_factor = 1.0f;
@@ -293,6 +323,8 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_index_count += 6;
+
+	g_s_data.stats.quad_count++;
 }
 
 void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation,
@@ -303,6 +335,10 @@ void Renderer2D::drawRotatedQuad(const glm::vec2& position, const glm::vec2& siz
 void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation,
                                  const Ref<Texture2D>& texture, float tiling_factor, const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
+
+	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
+		flushAndReset();
+	}
 
 	constexpr glm::vec4 k_color = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -353,6 +389,16 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	g_s_data.quad_vertex_buffer_ptr++;
 
 	g_s_data.quad_index_count += 6;
+
+	g_s_data.stats.quad_count++;
+}
+
+void Renderer2D::resetStats() {
+	memset(&g_s_data.stats, 0, sizeof(Statistics));
+}
+
+Renderer2D::Statistics Renderer2D::getStats() {
+	return g_s_data.stats;
 }
 
 }  // namespace hazel
