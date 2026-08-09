@@ -72,10 +72,10 @@ struct BufferElement {
 				return 3;
 			case ShaderDataType::Float4:
 				return 4;
-			case ShaderDataType::Mat3:
-				return 3 * 3;
-			case ShaderDataType::Mat4:
-				return 4 * 4;
+			case ShaderDataType::Mat3:  // 3* float3
+				return 3;
+			case ShaderDataType::Mat4:  // 4* float4
+				return 4;
 			case ShaderDataType::Int:
 				return 1;
 			case ShaderDataType::Int2:
