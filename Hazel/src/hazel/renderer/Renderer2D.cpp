@@ -218,6 +218,10 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	}
 
 	if (texture_index == 0.0f) {
+		if (g_s_data.texture_slot_index >= Renderer2DData::k_max_texture_slots) {
+			flushAndReset();
+		}
+
 		texture_index = static_cast<float>(g_s_data.texture_slot_index);
 		g_s_data.texture_slots[g_s_data.texture_slot_index] = texture;
 		g_s_data.texture_slot_index++;
@@ -302,6 +306,10 @@ void Renderer2D::drawRotatedQuad(const glm::vec3& position, const glm::vec2& siz
 	}
 
 	if (texture_index == 0.0f) {
+		if (g_s_data.texture_slot_index >= Renderer2DData::k_max_texture_slots) {
+			flushAndReset();
+		}
+
 		texture_index = static_cast<float>(g_s_data.texture_slot_index);
 		g_s_data.texture_slots[g_s_data.texture_slot_index] = texture;
 		g_s_data.texture_slot_index++;
