@@ -22,7 +22,7 @@ void OpenGLRendererAPI::clear() {
 }
 
 void OpenGLRendererAPI::drawIndexed(const std::shared_ptr<VertexArray>& vertex_array, uint32_t index_count) {
-	uint32_t count = index_count ? vertex_array->getIndexBuffer()->getCount() : index_count;
+	uint32_t count = index_count ? index_count : vertex_array->getIndexBuffer()->getCount();
 	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
