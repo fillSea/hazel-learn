@@ -142,6 +142,9 @@ void Renderer2D::endScene() {
 }
 
 void Renderer2D::flush() {
+	if (g_s_data.quad_index_count == 0) {
+		return;  // Nothing to draw
+	}
 	// Bind textures
 	for (uint32_t i = 0; i < g_s_data.texture_slot_index; i++) {
 		g_s_data.texture_slots[i]->bind(i);
