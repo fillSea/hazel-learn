@@ -32,6 +32,8 @@ public:
 
 	inline static Application& getInstance() { return *instance_; }
 
+	void close();
+
 private:
 	void run();
 	bool onWindowClose(WindowCloseEvent& e);

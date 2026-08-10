@@ -35,6 +35,8 @@ public:
 	/// @param slot 纹理槽索引，默认为 0
 	virtual void bind(uint32_t slot = 0) const = 0;
 
+	virtual uint32_t getRendererID() const = 0;
+
 	virtual bool operator==(const Texture& other) const = 0;
 };
 

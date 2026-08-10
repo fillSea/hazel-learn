@@ -118,4 +118,8 @@ bool Application::onWindowResize(WindowResizeEvent& e) {
 
 	return false;
 }
+
+void Application::close() {
+	running_ = false;
+}
 }  // namespace hazel

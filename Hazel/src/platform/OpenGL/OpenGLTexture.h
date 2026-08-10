@@ -24,6 +24,8 @@ public:
 
 	void bind(uint32_t slot = 0) const override;
 
+	uint32_t getRendererID() const override { return renderer_id_; }
+
 	bool operator==(const Texture& other) const override {
 		return renderer_id_ == (dynamic_cast<const OpenGLTexture2D&>(other)).renderer_id_;
 	}
