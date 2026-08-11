@@ -85,6 +85,7 @@ set(HAZEL_SOURCES
     Hazel/src/hazel/renderer/Texture.cpp
     Hazel/src/hazel/renderer/OrthographicCameraController.cpp
     Hazel/src/hazel/renderer/Renderer2D.cpp
+    Hazel/src/hazel/renderer/Framebuffer.cpp
     
     # ImGui
     Hazel/src/hazel/ImGui/ImGuiBuild.cpp
@@ -101,6 +102,7 @@ set(HAZEL_SOURCES
     Hazel/src/platform/OpenGL/OpenGLRendererAPI.cpp
     Hazel/src/platform/OpenGL/OpenGLShader.cpp
     Hazel/src/platform/OpenGL/OpenGLTexture.cpp
+    Hazel/src/platform/OpenGL/OpenGLFramebuffer.cpp
 
     # Widnows
     Hazel/src/platform/Windows/WindowsInput.cpp

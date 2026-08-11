@@ -12,6 +12,11 @@ void Sandbox2D::onAttach() {
 	HZ_PROFILE_FUNCTION();
 
 	checker_board_texture_ = hazel::Texture2D::create("assets/textures/Checkerboard.png");
+
+	hazel::FramebufferSpecification fb_spec;
+	fb_spec.width = 1280;
+	fb_spec.height = 720;
+	frame_buffer_ = hazel::Framebuffer::create(fb_spec);
 }
 
 void Sandbox2D::onDetach() {
@@ -28,6 +33,7 @@ void Sandbox2D::onUpdate(hazel::Timestep ts) {
 	hazel::Renderer2D::resetStats();
 	{
 		HZ_PROFILE_SCOPE("Renderer Prep");
+		frame_buffer_->bind();
 		hazel::RenderCommand::setClearColor({0.1f, 0.1f, 0.1f, 1});
 		hazel::RenderCommand::clear();
 	}
@@ -54,6 +60,7 @@ void Sandbox2D::onUpdate(hazel::Timestep ts) {
 			}
 		}
 		hazel::Renderer2D::endScene();
+		frame_buffer_->unbind();
 	}
 }
 
@@ -135,8 +142,8 @@ void Sandbox2D::onImGuiRender() {
 
 		ImGui::ColorEdit4("Square Color", glm::value_ptr(square_color_));
 
-		uint32_t texture_id = checker_board_texture_->getRendererID();
-		ImGui::Image(reinterpret_cast<void*>(texture_id), ImVec2{256.0f, 256.0f});
+		uint32_t texture_id = frame_buffer_->getColorAttachmentRendererID();
+		ImGui::Image(reinterpret_cast<void*>(texture_id), ImVec2{1280, 720});
 		ImGui::End();
 
 		ImGui::End();
@@ -153,7 +160,7 @@ void Sandbox2D::onImGuiRender() {
 		ImGui::ColorEdit4("Square Color", glm::value_ptr(square_color_));
 
 		uint32_t texture_id = checker_board_texture_->getRendererID();
-		ImGui::Image(reinterpret_cast<void*>(texture_id), ImVec2{256.0f, 256.0f});
+		ImGui::Image(reinterpret_cast<void*>(texture_id), ImVec2{1280, 720});
 		ImGui::End();
 	}
 }

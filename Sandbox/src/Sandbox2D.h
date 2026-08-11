@@ -25,6 +25,7 @@ private:
 	// Temp
 	hazel::Ref<hazel::VertexArray> square_va_;
 	hazel::Ref<hazel::Shader> flat_color_shader_;
+	hazel::Ref<hazel::Framebuffer> frame_buffer_;
 
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 

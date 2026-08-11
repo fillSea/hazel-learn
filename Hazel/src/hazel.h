@@ -12,6 +12,7 @@
 
 // ---Renderer------------------------
 #include "hazel/renderer/Buffer.h"
+#include "hazel/renderer/Framebuffer.h"
 #include "hazel/renderer/OrthographicCamera.h"
 #include "hazel/renderer/OrthographicCameraController.h"
 #include "hazel/renderer/RenderCommand.h"
