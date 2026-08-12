@@ -184,16 +184,17 @@ add_custom_command(TARGET Sandbox POST_BUILD
 
 # ============ Hazelnut 编辑器（后期添加） ============
 
-# file(GLOB_RECURSE HAZELNUT_SOURCES
-#     Hazelnut/src/*.cpp
-#     Hazelnut/src/*.h
-# )
-# add_executable(Hazelnut ${HAZELNUT_SOURCES})
-# target_include_directories(Hazelnut PRIVATE
-#     Hazel/src
-#     Hazel/vendor/spdlog/include
-#     Hazel/vendor/glm
-#     Hazel/vendor/entt/include
-#     Hazel/vendor/ImGuizmo
-# )
-# target_link_libraries(Hazelnut PRIVATE Hazel)
+set(HAZELNUT_SOURCES
+    Hazelnut/src/EditorLayer.cpp
+    Hazelnut/src/HazelEditorApp.cpp
+)
+
+add_executable(Hazelnut ${HAZELNUT_SOURCES})
+target_include_directories(Hazelnut PRIVATE
+    Hazel/src
+    Hazel/third_party/spdlog/include
+    Hazel/third_party/glm
+    # Hazel/third_party/entt/include
+    # Hazel/third_party/ImGuizmo
+)
+target_link_libraries(Hazelnut PRIVATE Hazel)

@@ -15,7 +15,7 @@ class VertexArray;
 
 class HAZEL_API Application {
 public:
-	Application();
+	explicit Application(const std::string& name = "Hazel App");
 	virtual ~Application();
 
 	Application(const Application&) = delete;

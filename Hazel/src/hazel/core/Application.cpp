@@ -11,13 +11,13 @@ namespace hazel {
 
 Application* Application::instance_ = nullptr;
 
-Application::Application() {
+Application::Application(const std::string& name) {
 	HZ_PROFILE_FUNCTION();
 
 	HZ_CORE_ASSERT(!instance_, "Application already exists!");
 	instance_ = this;
 
-	window_ = std::unique_ptr<Window>(Window::create());
+	window_ = std::unique_ptr<Window>(Window::create(WindowProps(name)));
 	window_->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 
 	Renderer::init();
