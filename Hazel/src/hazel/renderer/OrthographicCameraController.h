@@ -24,6 +24,8 @@ public:
 	/// @param e 待处理的事件。
 	void onEvent(Event& e);
 
+	void onResize(float width, float height);
+
 	/// @brief 获取正交相机引用（可修改）。
 	/// @return 正交相机的非 const 引用。
 	OrthographicCamera& getCamera() { return camera_; }

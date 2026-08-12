@@ -31,7 +31,9 @@ private:
 
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 
-	glm::vec4 square_color_ = {0.2f, 0.3f, 0.8f, 1.0f};
+	glm::vec2 viewport_size_{0.0f, 0.0f};
+
+	glm::vec4 square_color_{0.2f, 0.3f, 0.8f, 1.0f};
 };
 
 }  // namespace hazel

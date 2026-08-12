@@ -20,6 +20,8 @@ public:
 	virtual void bind() = 0;    // 绑定帧缓冲，使后续渲染输出到该缓冲
 	virtual void unbind() = 0;  // 解绑帧缓冲，恢复渲染到默认帧缓冲
 
+	virtual void resize(uint32_t width, uint32_t height) = 0;
+
 	// 获取颜色附件（纹理）的渲染器 ID，便于后续在着色器中采样该纹理
 	virtual uint32_t getColorAttachmentRendererID() const = 0;
 	// 获取该帧缓冲的规格信息

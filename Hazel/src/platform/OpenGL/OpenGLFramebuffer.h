@@ -20,6 +20,8 @@ public:
 	void bind() override;    // 绑定帧缓冲，使后续渲染输出到该缓冲
 	void unbind() override;  // 解绑，恢复渲染到默认帧缓冲
 
+	void resize(uint32_t width, uint32_t height) override;
+
 	// 返回颜色附件（纹理）的渲染器 ID，供着色器采样使用
 	uint32_t getColorAttachmentRendererID() const override { return color_attachment_; }
 
@@ -27,9 +29,9 @@ public:
 	const FramebufferSpecification& getSpecification() const override { return specification_; }
 
 private:
-	uint32_t renderer_id_;                    // OpenGL 帧缓冲对象（FBO）的 ID
-	uint32_t color_attachment_;               // 颜色附件（颜色纹理）的渲染器 ID
-	uint32_t depth_attachment_;               // 深度附件（深度缓冲）的渲染器 ID
+	uint32_t renderer_id_{0};                 // OpenGL 帧缓冲对象（FBO）的 ID
+	uint32_t color_attachment_{0};            // 颜色附件（颜色纹理）的渲染器 ID
+	uint32_t depth_attachment_{0};            // 深度附件（深度缓冲）的渲染器 ID
 	FramebufferSpecification specification_;  // 帧缓冲的规格配置
 };
 
