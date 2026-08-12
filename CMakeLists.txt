@@ -186,7 +186,7 @@ add_custom_command(TARGET Sandbox POST_BUILD
 
 set(HAZELNUT_SOURCES
     Hazelnut/src/EditorLayer.cpp
-    Hazelnut/src/HazelEditorApp.cpp
+    Hazelnut/src/HazelnutApp.cpp
 )
 
 add_executable(Hazelnut ${HAZELNUT_SOURCES})
@@ -198,3 +198,15 @@ target_include_directories(Hazelnut PRIVATE
     # Hazel/third_party/ImGuizmo
 )
 target_link_libraries(Hazelnut PRIVATE Hazel)
+
+# Texture paths are relative to the executable's asset directory.  Configure
+# Visual Studio's debugger to match the directory used by the built executable.
+set_target_properties(Hazelnut PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Hazelnut>"
+)
+
+add_custom_command(TARGET Hazelnut POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/Hazelnut/assets
+        ${CMAKE_BINARY_DIR}/bin/assets
+)
