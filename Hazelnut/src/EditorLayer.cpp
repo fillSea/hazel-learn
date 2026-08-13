@@ -29,7 +29,9 @@ void EditorLayer::onUpdate(hazel::Timestep ts) {
 	HZ_PROFILE_FUNCTION();
 
 	// Update
-	camera_controller_.onUpdate(ts);
+	if (viewport_focused_) {
+		camera_controller_.onUpdate(ts);
+	}
 
 	// Render
 	hazel::Renderer2D::resetStats();
@@ -146,6 +148,11 @@ void EditorLayer::onImGuiRender() {
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
 	ImGui::Begin("Viewport");
+
+	viewport_focused_ = ImGui::IsWindowFocused();
+	viewport_hovered_ = ImGui::IsWindowHovered();
+	Application::getInstance().getImGuiLayer()->blockEvents(!viewport_focused_ || !viewport_hovered_);
+
 	ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
 	if (viewport_size_ != *(reinterpret_cast<glm::vec2*>(&viewport_panel_size))) {
 		frame_buffer_->resize(static_cast<uint32_t>(viewport_panel_size.x),

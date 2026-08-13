@@ -32,6 +32,8 @@ private:
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 
 	glm::vec2 viewport_size_{0.0f, 0.0f};
+	bool viewport_focused_ = false;
+	bool viewport_hovered_ = false;
 
 	glm::vec4 square_color_{0.2f, 0.3f, 0.8f, 1.0f};
 };

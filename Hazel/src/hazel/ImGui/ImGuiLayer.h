@@ -21,8 +21,12 @@ public:
 	void begin();
 	void end();
 
+	void blockEvents(bool block) { block_events_ = block; }
+
 private:
 	// 时间戳, 用于帧同步
 	float time_ = 0.0F;
+	// 是否阻止事件传递给底层应用
+	bool block_events_ = true;
 };
 }  // namespace hazel

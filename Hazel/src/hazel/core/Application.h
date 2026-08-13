@@ -34,6 +34,8 @@ public:
 
 	void close();
 
+	ImGuiLayer* getImGuiLayer() { return imGui_layer_; }
+
 private:
 	void run();
 	bool onWindowClose(WindowCloseEvent& e);
