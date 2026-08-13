@@ -28,6 +28,14 @@ void EditorLayer::onDetach() {
 void EditorLayer::onUpdate(hazel::Timestep ts) {
 	HZ_PROFILE_FUNCTION();
 
+	// Resize
+	if (hazel::FramebufferSpecification spec = frame_buffer_->getSpecification();
+	    viewport_size_.x > 0.0f && viewport_size_.y > 0.0f &&  // zero sized framebuffer is invalid
+	    (spec.width != viewport_size_.x || spec.height != viewport_size_.y)) {
+		frame_buffer_->resize(static_cast<uint32_t>(viewport_size_.x), static_cast<uint32_t>(viewport_size_.y));
+		camera_controller_.onResize(viewport_size_.x, viewport_size_.y);
+	}
+
 	// Update
 	if (viewport_focused_) {
 		camera_controller_.onUpdate(ts);
@@ -154,13 +162,7 @@ void EditorLayer::onImGuiRender() {
 	Application::getInstance().getImGuiLayer()->blockEvents(!viewport_focused_ || !viewport_hovered_);
 
 	ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
-	if (viewport_size_ != *(reinterpret_cast<glm::vec2*>(&viewport_panel_size))) {
-		frame_buffer_->resize(static_cast<uint32_t>(viewport_panel_size.x),
-		                      static_cast<uint32_t>(viewport_panel_size.y));
-		viewport_size_ = {viewport_panel_size.x, viewport_panel_size.y};
-
-		camera_controller_.onResize(viewport_panel_size.x, viewport_panel_size.y);
-	}
+	viewport_size_ = {viewport_panel_size.x, viewport_panel_size.y};
 	uint32_t texture_id = frame_buffer_->getColorAttachmentRendererID();
 	ImGui::Image(reinterpret_cast<void*>(texture_id), ImVec2{viewport_size_.x, viewport_size_.y}, ImVec2{0, 1},
 	             ImVec2{1, 0});
