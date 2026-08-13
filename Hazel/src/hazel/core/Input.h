@@ -6,24 +6,11 @@
 namespace hazel {
 class HAZEL_API Input {
 public:
-	inline static bool isKeyPressed(KeyCode key) { return instance_->isKeyPressedImpl(key); }
+	static bool isKeyPressed(KeyCode key);
 
-	inline static bool isMouseButtonPressed(MouseCode button) { return instance_->isMouseButtonPressedImpl(button); }
-	inline static std::pair<float, float> getMousePosition() { return instance_->getMousePositionImpl(); }
-	inline static float getMouseX() { return instance_->getMouseXImpl(); }
-	inline static float getMouseY() { return instance_->getMouseYImpl(); }
-
-	static Scope<Input> create();
-
-protected:
-	virtual bool isKeyPressedImpl(KeyCode key) = 0;
-
-	virtual bool isMouseButtonPressedImpl(MouseCode button) = 0;
-	virtual std::pair<float, float> getMousePositionImpl() = 0;
-	virtual float getMouseXImpl() = 0;
-	virtual float getMouseYImpl() = 0;
-
-private:
-	static Scope<Input> instance_;
+	static bool isMouseButtonPressed(MouseCode button);
+	static std::pair<float, float> getMousePosition();
+	static float getMouseX();
+	static float getMouseY();
 };
 }  // namespace hazel
