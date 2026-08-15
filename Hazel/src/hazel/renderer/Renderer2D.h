@@ -2,6 +2,7 @@
 
 #include "OrthographicCamera.h"
 #include "Texture.h"
+#include "hazel/renderer/Camera.h"
 
 namespace hazel {
 
@@ -23,7 +24,8 @@ public:
 	/// @brief 开始一个场景的渲染。
 	/// @param camera 当前使用的正交相机，用于计算视图-投影矩阵。
 	/// 之后绘制的图元都基于该相机进行变换。
-	static void beginScene(const OrthographicCamera& camera);
+	static void beginScene(const OrthographicCamera& camera);  // TODO: Remove
+	static void beginScene(const Camera& camera, const glm::mat4& transform);
 
 	/// @brief 结束当前场景的渲染。
 	static void endScene();

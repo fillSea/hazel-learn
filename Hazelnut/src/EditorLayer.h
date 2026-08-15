@@ -31,6 +31,10 @@ private:
 
 	Ref<Scene> active_scene_;
 	Entity square_entity_;
+	Entity camera_entity_;
+	Entity second_camera_;
+
+	bool primary_camera_ = true;
 
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 

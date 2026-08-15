@@ -120,6 +120,20 @@ void Renderer2D::shutdown() {
 	delete[] g_s_data.quad_vertex_buffer_base;
 }
 
+void Renderer2D::beginScene(const Camera& camera, const glm::mat4& transform) {
+	HZ_PROFILE_FUNCTION();
+
+	glm::mat4 view_proj = camera.getProjection() * glm::inverse(transform);
+
+	g_s_data.texture_shader->bind();
+	g_s_data.texture_shader->setMat4("u_ViewProjection", view_proj);
+
+	g_s_data.quad_index_count = 0;
+	g_s_data.quad_vertex_buffer_ptr = g_s_data.quad_vertex_buffer_base;
+
+	g_s_data.texture_slot_index = 1;
+}
+
 void Renderer2D::beginScene(const OrthographicCamera& camera) {
 	HZ_PROFILE_FUNCTION();
 
