@@ -174,7 +174,11 @@ private:
 #if HZ_PROFILE
 #define HZ_PROFILE_BEGIN_SESSION(name, filepath) ::hazel::Instrumentor::getInstance().beginSession(name, filepath)
 #define HZ_PROFILE_END_SESSION() ::hazel::Instrumentor::getInstance().endSession()
-#define HZ_PROFILE_SCOPE(name) ::hazel::InstrumentationTimer timer##__LINE__(name);
+#define HZ_PROFILE_SCOPE_LINE2(name, line)                                                              \
+	constexpr auto fixedName##line = ::Hazel::InstrumentorUtils::CleanupOutputString(name, "__cdecl "); \
+	::hazel::InstrumentationTimer timer##line(fixedName##line.Data)
+#define HZ_PROFILE_SCOPE_LINE(name, line) HZ_PROFILE_SCOPE_LINE2(name, line)
+#define HZ_PROFILE_SCOPE(name) HZ_PROFILE_SCOPE_LINE(name, __LINE__)
 #define HZ_PROFILE_FUNCTION() HZ_PROFILE_SCOPE(__FUNCSIG__)
 #else
 #define HZ_PROFILE_BEGIN_SESSION(name, filepath)
