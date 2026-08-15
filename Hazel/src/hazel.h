@@ -10,6 +10,7 @@
 #include "hazel/core/MouseCodes.h"
 #include "hazel/core/Timestep.h"
 #include "hazel/scene/Components.h"
+#include "hazel/scene/Entity.h"
 #include "hazel/scene/Scene.h"
 
 // ---Renderer------------------------

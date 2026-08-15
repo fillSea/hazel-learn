@@ -30,7 +30,7 @@ private:
 	hazel::Ref<hazel::Framebuffer> frame_buffer_;
 
 	Ref<Scene> active_scene_;
-	entt::entity square_entity_;
+	Entity square_entity_;
 
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 
