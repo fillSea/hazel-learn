@@ -47,12 +47,12 @@ target_include_directories(glm INTERFACE Hazel/third_party/glm)
 add_library(stb_image STATIC Hazel/third_party/stb_image/stb_image.cpp)
 target_include_directories(stb_image PUBLIC Hazel/third_party/stb_image)
 
+# entt (后期需要，ECS 时添加，header-only)
+add_library(entt INTERFACE)
+target_include_directories(entt INTERFACE Hazel/third_party/entt/include)
+
 # yaml-cpp (后期需要，场景序列化时添加)
 # add_subdirectory(Hazel/vendor/yaml-cpp)
-
-# entt (后期需要，ECS 时添加，header-only)
-# add_library(entt INTERFACE)
-# target_include_directories(entt INTERFACE Hazel/vendor/entt/include)
 
 # ImGuizmo (后期需要，编辑器 Gizmo 时添加)
 # add_library(ImGuizmo STATIC Hazel/vendor/ImGuizmo/ImGuizmo.cpp)
@@ -85,6 +85,9 @@ set(HAZEL_SOURCES
     Hazel/src/hazel/renderer/OrthographicCameraController.cpp
     Hazel/src/hazel/renderer/Renderer2D.cpp
     Hazel/src/hazel/renderer/Framebuffer.cpp
+
+    #scene
+    Hazel/src/hazel/scene/Scene.cpp
     
     # ImGui
     Hazel/src/hazel/ImGui/ImGuiBuild.cpp
@@ -118,7 +121,7 @@ target_include_directories(Hazel PUBLIC
     Hazel/third_party/Glad/include
     Hazel/third_party/imgui
     Hazel/third_party/glm
-    # Hazel/vendor/entt/include        # 后期添加
+    Hazel/third_party/entt/include        
     # Hazel/vendor/yaml-cpp/include    # 后期添加
     # Hazel/vendor/ImGuizmo            # 后期添加
 )
@@ -132,7 +135,7 @@ target_link_libraries(Hazel PUBLIC
     opengl32
     stb_image
     # yaml-cpp      # 后期添加
-    # entt          # 后期添加
+    entt
     # ImGuizmo      # 后期添加
     # Box2D         # 后期添加
 )
@@ -193,7 +196,7 @@ target_include_directories(Hazelnut PRIVATE
     Hazel/src
     Hazel/third_party/spdlog/include
     Hazel/third_party/glm
-    # Hazel/third_party/entt/include
+    Hazel/third_party/entt/include
     # Hazel/third_party/ImGuizmo
 )
 target_link_libraries(Hazelnut PRIVATE Hazel)

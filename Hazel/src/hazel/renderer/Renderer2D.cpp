@@ -171,6 +171,71 @@ void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, cons
 void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color) {
 	HZ_PROFILE_FUNCTION();
 
+	glm::mat4 transform =
+	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+
+	drawQuad(transform, color);
+}
+
+void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture,
+                          float tiling_factor, const glm::vec4& tint_color) {
+	drawQuad({position.x, position.y, 0.0f}, size, texture, tiling_factor, tint_color);
+}
+
+void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture,
+                          float tiling_factor, const glm::vec4& tint_color) {
+	HZ_PROFILE_FUNCTION();
+
+	glm::mat4 transform =
+	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+
+	drawQuad(transform, texture, tiling_factor);
+
+	// constexpr size_t k_quad_vertex_count = 4;
+	// constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+
+	// if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
+	// 	flushAndReset();
+	// }
+
+	// float texture_index = 0.0f;
+	// for (uint32_t i = 1; i < g_s_data.texture_slot_index; i++) {
+	// 	if (*g_s_data.texture_slots[i] == *texture.get()) {
+	// 		texture_index = static_cast<float>(i);
+	// 		break;
+	// 	}
+	// }
+
+	// if (texture_index == 0.0f) {
+	// 	if (g_s_data.texture_slot_index >= Renderer2DData::k_max_texture_slots) {
+	// 		flushAndReset();
+	// 	}
+
+	// 	texture_index = static_cast<float>(g_s_data.texture_slot_index);
+	// 	g_s_data.texture_slots[g_s_data.texture_slot_index] = texture;
+	// 	g_s_data.texture_slot_index++;
+	// }
+
+	// glm::mat4 transform =
+	//     glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
+
+	// for (size_t i = 0; i < k_quad_vertex_count; i++) {
+	// 	g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
+	// 	g_s_data.quad_vertex_buffer_ptr->color = tint_color;
+	// 	g_s_data.quad_vertex_buffer_ptr->tex_coord = k_texture_coords[i];
+	// 	g_s_data.quad_vertex_buffer_ptr->tex_index = texture_index;
+	// 	g_s_data.quad_vertex_buffer_ptr->tiling_factor = tiling_factor;
+	// 	g_s_data.quad_vertex_buffer_ptr++;
+	// }
+
+	// g_s_data.quad_index_count += 6;
+
+	// g_s_data.stats.quad_count++;
+}
+
+void Renderer2D::drawQuad(const glm::mat4& transform, const glm::vec4& color) {
+	HZ_PROFILE_FUNCTION();
+
 	constexpr size_t k_quad_vertex_count = 4;
 	const float k_texture_index = 0.0f;  // White Texture
 	constexpr glm::vec2 k_texture_coords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
@@ -179,9 +244,6 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	if (g_s_data.quad_index_count >= Renderer2DData::k_max_indices) {
 		flushAndReset();
 	}
-
-	glm::mat4 transform =
-	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
 	for (size_t i = 0; i < k_quad_vertex_count; i++) {
 		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];
@@ -197,13 +259,8 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 	g_s_data.stats.quad_count++;
 }
 
-void Renderer2D::drawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture,
-                          float tiling_factor, const glm::vec4& tint_color) {
-	drawQuad({position.x, position.y, 0.0f}, size, texture, tiling_factor, tint_color);
-}
-
-void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture,
-                          float tiling_factor, const glm::vec4& tint_color) {
+void Renderer2D::drawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tiling_factor,
+                          const glm::vec4& tint_color) {
 	HZ_PROFILE_FUNCTION();
 
 	constexpr size_t k_quad_vertex_count = 4;
@@ -230,9 +287,6 @@ void Renderer2D::drawQuad(const glm::vec3& position, const glm::vec2& size, cons
 		g_s_data.texture_slots[g_s_data.texture_slot_index] = texture;
 		g_s_data.texture_slot_index++;
 	}
-
-	glm::mat4 transform =
-	    glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), {size.x, size.y, 1.0f});
 
 	for (size_t i = 0; i < k_quad_vertex_count; i++) {
 		g_s_data.quad_vertex_buffer_ptr->position = transform * g_s_data.quad_vertex_positions[i];

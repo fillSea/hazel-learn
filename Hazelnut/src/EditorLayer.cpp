@@ -13,23 +13,31 @@ EditorLayer::EditorLayer()
 void EditorLayer::onAttach() {
 	HZ_PROFILE_FUNCTION();
 
-	checker_board_texture_ = hazel::Texture2D::create("assets/textures/Checkerboard.png");
+	checker_board_texture_ = Texture2D::create("assets/textures/Checkerboard.png");
 
-	hazel::FramebufferSpecification fb_spec;
+	FramebufferSpecification fb_spec;
 	fb_spec.width = 1280;
 	fb_spec.height = 720;
-	frame_buffer_ = hazel::Framebuffer::create(fb_spec);
+	frame_buffer_ = Framebuffer::create(fb_spec);
+
+	active_scene_ = createRef<Scene>();
+
+	auto square = active_scene_->createEntity();
+	active_scene_->reg().emplace<TransformComponent>(square);
+	active_scene_->reg().emplace<SpriteRendererComponent>(square, glm::vec4{0.0f, 1.0f, 0.0f, 1.0f});
+
+	square_entity_ = square;
 }
 
 void EditorLayer::onDetach() {
 	HZ_PROFILE_FUNCTION();
 }
 
-void EditorLayer::onUpdate(hazel::Timestep ts) {
+void EditorLayer::onUpdate(Timestep ts) {
 	HZ_PROFILE_FUNCTION();
 
 	// Resize
-	if (hazel::FramebufferSpecification spec = frame_buffer_->getSpecification();
+	if (FramebufferSpecification spec = frame_buffer_->getSpecification();
 	    viewport_size_.x > 0.0f && viewport_size_.y > 0.0f &&  // zero sized framebuffer is invalid
 	    (spec.width != viewport_size_.x || spec.height != viewport_size_.y)) {
 		frame_buffer_->resize(static_cast<uint32_t>(viewport_size_.x), static_cast<uint32_t>(viewport_size_.y));
@@ -42,38 +50,19 @@ void EditorLayer::onUpdate(hazel::Timestep ts) {
 	}
 
 	// Render
-	hazel::Renderer2D::resetStats();
-	{
-		HZ_PROFILE_SCOPE("Renderer Prep");
-		frame_buffer_->bind();
-		hazel::RenderCommand::setClearColor({0.1f, 0.1f, 0.1f, 1});
-		hazel::RenderCommand::clear();
-	}
+	Renderer2D::resetStats();
+	frame_buffer_->bind();
+	RenderCommand::setClearColor({0.1f, 0.1f, 0.1f, 1});
+	RenderCommand::clear();
 
-	{
-		static float s_rotation = 0.0f;
-		s_rotation += ts * 50.0f;
+	Renderer2D::beginScene(camera_controller_.getCamera());
 
-		HZ_PROFILE_SCOPE("Renderer Draw");
-		hazel::Renderer2D::beginScene(camera_controller_.getCamera());
-		hazel::Renderer2D::drawRotatedQuad({1.0f, 0.0f}, {0.8f, 0.8f}, -45.0f, {0.8f, 0.2f, 0.3f, 1.0f});
-		hazel::Renderer2D::drawQuad({-1.0f, 0.0f}, {0.8f, 0.8f}, {0.8f, 0.2f, 0.3f, 1.0f});
-		hazel::Renderer2D::drawQuad({0.5f, -0.5f}, {0.5f, 0.75f}, square_color_);
-		hazel::Renderer2D::drawQuad({0.0f, 0.0f, -0.1f}, {20.0f, 20.0f}, checker_board_texture_, 10.0f);
-		hazel::Renderer2D::drawRotatedQuad({-2.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, s_rotation, checker_board_texture_,
-		                                   20.0f);
-		hazel::Renderer2D::endScene();
+	// Update scene
+	active_scene_->onUpdate(ts);
 
-		hazel::Renderer2D::beginScene(camera_controller_.getCamera());
-		for (float y = -5.0f; y < 5.0f; y += 0.5f) {
-			for (float x = -5.0f; x < 5.0f; x += 0.5f) {
-				glm::vec4 color = {(x + 5.0f) / 10.0f, 0.4f, (y + 5.0f) / 10.0f, 0.7f};
-				hazel::Renderer2D::drawQuad({x, y}, {0.45f, 0.45f}, color);
-			}
-		}
-		hazel::Renderer2D::endScene();
-		frame_buffer_->unbind();
-	}
+	Renderer2D::endScene();
+
+	frame_buffer_->unbind();
 }
 
 void EditorLayer::onImGuiRender() {
@@ -133,7 +122,7 @@ void EditorLayer::onImGuiRender() {
 			// ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
 			if (ImGui::MenuItem("Exit")) {
-				hazel::Application::getInstance().close();
+				Application::getInstance().close();
 			}
 			ImGui::EndMenu();
 		}
@@ -143,14 +132,15 @@ void EditorLayer::onImGuiRender() {
 
 	ImGui::Begin("Settings");
 
-	auto stats = hazel::Renderer2D::getStats();
+	auto stats = Renderer2D::getStats();
 	ImGui::Text("Renderer2D Stats:");
 	ImGui::Text("Draw Calls: %d", stats.draw_calls);
 	ImGui::Text("Quads: %d", stats.quad_count);
 	ImGui::Text("Vertices: %d", stats.getTotalVertexCount());
 	ImGui::Text("Indices: %d", stats.getTotalIndexCount());
 
-	ImGui::ColorEdit4("Square Color", glm::value_ptr(square_color_));
+	auto& square_color = active_scene_->reg().get<SpriteRendererComponent>(square_entity_).color;
+	ImGui::ColorEdit4("Square Color", glm::value_ptr(square_color));
 
 	ImGui::End();
 
@@ -172,7 +162,7 @@ void EditorLayer::onImGuiRender() {
 	ImGui::End();
 }
 
-void EditorLayer::onEvent(hazel::Event& e) {
+void EditorLayer::onEvent(Event& e) {
 	camera_controller_.onEvent(e);
 }
 

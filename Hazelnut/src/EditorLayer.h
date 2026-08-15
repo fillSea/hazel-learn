@@ -29,6 +29,9 @@ private:
 	hazel::Ref<hazel::Shader> flat_color_shader_;
 	hazel::Ref<hazel::Framebuffer> frame_buffer_;
 
+	Ref<Scene> active_scene_;
+	entt::entity square_entity_;
+
 	hazel::Ref<hazel::Texture2D> checker_board_texture_;
 
 	glm::vec2 viewport_size_{0.0f, 0.0f};

@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 namespace hazel {
+static const uint32_t k_s_max_framebuffer_size = 8192;
 
 OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec) : specification_(spec) {
 	invalidate();
@@ -55,6 +56,11 @@ void OpenGLFramebuffer::unbind() {
 }
 
 void OpenGLFramebuffer::resize(uint32_t width, uint32_t height) {
+	if (width == 0 || height == 0 || width > k_s_max_framebuffer_size || height > k_s_max_framebuffer_size) {
+		HZ_CORE_WARN("Attempted to rezize framebuffer to {0}, {1}", width, height);
+		return;
+	}
+
 	specification_.width = width;
 	specification_.height = height;
 
