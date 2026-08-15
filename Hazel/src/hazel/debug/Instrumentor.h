@@ -29,14 +29,9 @@ struct InstrumentationSession {
 // Instrumentor:性能分析器(单例),负责管理分析会话,并将采样结果
 // 以 Chrome Tracing 的 JSON 格式写入文件(可直接在 chrome://tracing 中查看)
 class Instrumentor {
-private:
-	std::mutex mutex_;
-
-	InstrumentationSession* current_session_{};  // 当前进行中的会话(无会话时为 nullptr)
-	std::ofstream output_stream_;                // 结果输出文件流
-
 public:
-	Instrumentor() = default;
+	Instrumentor(const Instrumentor&) = delete;
+	Instrumentor(Instrumentor&&) = delete;
 
 	static Instrumentor& getInstance() {
 		static Instrumentor s_instance;
@@ -124,6 +119,17 @@ public:
 			current_session_ = nullptr;
 		}
 	}
+
+private:
+	Instrumentor() : current_session_(nullptr) {}
+
+	~Instrumentor() { endSession(); }
+
+private:
+	std::mutex mutex_;
+
+	InstrumentationSession* current_session_{};  // 当前进行中的会话(无会话时为 nullptr)
+	std::ofstream output_stream_;                // 结果输出文件流
 };
 
 // InstrumentationTimer:基于 RAII 的作用域计时器。
