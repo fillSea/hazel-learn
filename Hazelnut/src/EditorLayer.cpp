@@ -28,11 +28,11 @@ void EditorLayer::onAttach() {
 	square_entity_ = square;
 
 	camera_entity_ = active_scene_->createEntity("Camera Entity");
-	camera_entity_.addComponent<CameraComponent>(glm::ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+	camera_entity_.addComponent<CameraComponent>();
 
 	second_camera_ = active_scene_->createEntity("Clip-Space Entity");
-	auto& cc = second_camera_.addComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
-	cc.Primary = false;
+	auto& cc = second_camera_.addComponent<CameraComponent>();
+	cc.primary = false;
 }
 
 void EditorLayer::onDetach() {
@@ -48,6 +48,9 @@ void EditorLayer::onUpdate(Timestep ts) {
 	    (spec.width != viewport_size_.x || spec.height != viewport_size_.y)) {
 		frame_buffer_->resize(static_cast<uint32_t>(viewport_size_.x), static_cast<uint32_t>(viewport_size_.y));
 		camera_controller_.onResize(viewport_size_.x, viewport_size_.y);
+
+		active_scene_->onViewportResize(static_cast<uint32_t>(viewport_size_.x),
+		                                static_cast<uint32_t>(viewport_size_.y));
 	}
 
 	// Update
@@ -155,8 +158,16 @@ void EditorLayer::onImGuiRender() {
 	                  glm::value_ptr(camera_entity_.getComponent<TransformComponent>().transform[3]));
 
 	if (ImGui::Checkbox("Camera A", &primary_camera_)) {
-		camera_entity_.getComponent<CameraComponent>().Primary = primary_camera_;
-		second_camera_.getComponent<CameraComponent>().Primary = !primary_camera_;
+		camera_entity_.getComponent<CameraComponent>().primary = primary_camera_;
+		second_camera_.getComponent<CameraComponent>().primary = !primary_camera_;
+	}
+
+	{
+		auto& camera = second_camera_.getComponent<CameraComponent>().camera;
+		float ortho_size = camera.getOrthographicSize();
+		if (ImGui::DragFloat("Second Camera Ortho Size", &ortho_size)) {
+			camera.setOrthographicSize(ortho_size);
+		}
 	}
 
 	ImGui::End();

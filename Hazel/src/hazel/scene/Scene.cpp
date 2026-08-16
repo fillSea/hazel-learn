@@ -53,8 +53,8 @@ void Scene::onUpdate(Timestep ts) {
 		for (auto entity : group) {
 			auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
 
-			if (camera.Primary) {
-				main_camera = &camera.Camera;
+			if (camera.primary) {
+				main_camera = &camera.camera;
 				camera_transform = &transform.transform;
 				break;
 			}
@@ -72,6 +72,20 @@ void Scene::onUpdate(Timestep ts) {
 		}
 
 		Renderer2D::endScene();
+	}
+}
+
+void Scene::onViewportResize(uint32_t width, uint32_t height) {
+	viewport_width_ = width;
+	viewport_height_ = height;
+
+	// Resize our non-FixedAspectRatio cameras
+	auto view = registry_.view<CameraComponent>();
+	for (auto entity : view) {
+		auto& camera_component = view.get<CameraComponent>(entity);
+		if (!camera_component.fixed_aspect_ratio) {
+			camera_component.camera.setViewportSize(width, height);
+		}
 	}
 }
 

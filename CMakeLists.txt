@@ -89,6 +89,7 @@ set(HAZEL_SOURCES
     #scene
     Hazel/src/hazel/scene/Scene.cpp
     Hazel/src/hazel/scene/Entity.cpp
+    Hazel/src/hazel/scene/SceneCamera.cpp
     
     # ImGui
     Hazel/src/hazel/ImGui/ImGuiBuild.cpp

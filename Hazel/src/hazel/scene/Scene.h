@@ -24,11 +24,16 @@ public:
 	/// @param ts 本帧的时间步长。
 	void onUpdate(Timestep ts);
 
+	void onViewportResize(uint32_t width, uint32_t height);
+
 private:
 	friend class Entity;
 
 	/// @brief 存储场景中所有实体及其组件的 EnTT 注册表。
 	entt::registry registry_;
+
+	uint32_t viewport_width_ = 0;
+	uint32_t viewport_height_ = 0;
 };
 
 }  // namespace hazel
